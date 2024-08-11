@@ -1,0 +1,7 @@
+com\mycompany\testecontrole\TesteControle.class
+com\mycompany\testecontrole\ConnectionFactory.class
+com\mycompany\testecontrole\Impressora.class
+com\mycompany\testecontrole\Equipamento.class
+com\mycompany\testecontrole\ComputadorDAO.class
+com\mycompany\testecontrole\ImpressoraDAO.class
+com\mycompany\testecontrole\Computador.class
