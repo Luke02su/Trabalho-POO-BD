@@ -19,39 +19,59 @@ public class ComputadorDAO {
     }
     
     public void adicionar(Computador computador) {
-        // Comando SQL para inserir um novo contato na tabela contatos
-        String sql1 = "INSERT INTO equipamento " + "(tipo, modelo)" + "VALUES (?, ?)";
-        String sql2 = "INSERT INTO computador " + "(fk_equipamento, processador, memoria, windows, armazenamento, formatacao, manutencao)" + " VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Comando SQL para inserir um novo equipamento e computador
+        String sql1 = "INSERT INTO equipamento (tipo, modelo) VALUES (?, ?)";
+        String sql2 = "INSERT INTO computador (fk_equipamento, processador, memoria, windows, armazenamento, formatacao, manutencao) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try {
-            // Cria um PreparedStatement para executar o comando SQL
-            PreparedStatement stmt1 = connection.prepareStatement(sql1);
-            PreparedStatement stmt2 = connection.prepareStatement(sql2);
-            
+            // Começar a transação
+            connection.setAutoCommit(false);
+
+            // Inserir o equipamento
+            PreparedStatement stmt1 = connection.prepareStatement(sql1, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt1.setString(1, computador.getTipo());
             stmt1.setString(2, computador.getModelo());
+            stmt1.executeUpdate();
 
-            // Define os valores dos parâmetros na instrução SQL
-            stmt2.setInt(1, computador.getPk_equipamento());
-            stmt2.setString(2, computador.getProcessador());
-            stmt2.setString(3, computador.getMemoria()); // Email do contato
-            stmt2.setString(4, computador.getWindows()); // Endereço do contato
-            stmt2.setString(5, computador.getArmazenamento());
-            stmt2.setString(6, computador.getFormatacao());
-            stmt2.setString(7, computador.getManutencao());
+            // Recuperar a chave primária gerada para o equipamento
+            ResultSet generatedKeys = stmt1.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int equipamentoId = generatedKeys.getInt(1);
 
-            // Executa o comando SQL
-            // O método execute retorna true se a execução gerar um ResultSet (não é o caso aqui), caso contrário retorna false
-            if (!stmt1.execute() && !stmt2.execute()) {
-                System.out.println("Computador adicionado com sucesso."); // Mensagem de sucesso
-            } else {
-                System.out.println("Erro na gravação de computador."); // Mensagem de erro
+                // Inserir o computador com a chave estrangeira do equipamento
+                PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                stmt2.setInt(1, equipamentoId); // fk_equipamento
+                stmt2.setString(2, computador.getProcessador());
+                stmt2.setString(3, computador.getMemoria());
+                stmt2.setString(4, computador.getWindows());
+                stmt2.setString(5, computador.getArmazenamento());
+                stmt2.setString(6, computador.getFormatacao());
+                stmt2.setString(7, computador.getManutencao());
+
+                stmt2.executeUpdate();
+                stmt2.close();
             }
-            stmt1.close(); // Fecha o PreparedStatement
-            stmt2.close();
+
+            // Commit da transação
+            connection.commit();
+
+            System.out.println("Computador adicionado com sucesso."); // Mensagem de sucesso
         } catch (SQLException e) {
-            // Lança uma exceção em caso de erro na execução do SQL
+            try {
+                // Se houver um erro, reverter a transação
+                connection.rollback();
+                System.out.println("Erro na gravação de computador. Transação revertida."); // Mensagem de erro
+            } catch (SQLException rollbackEx) {
+                throw new RuntimeException("Erro ao reverter a transação", rollbackEx);
+            }
             throw new RuntimeException(e);
+        } finally {
+            try {
+                // Restaurar o estado de autocommit
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                throw new RuntimeException("Erro ao restaurar o estado de autocommit", ex);
+            }
         }
     }
 
@@ -93,7 +113,7 @@ public class ComputadorDAO {
     }
     
     public void listar() {
-        System.out.println("------------ LISTAGEM COMPLETA DE COMPUTADORES ------------");
+        System.out.println("------------ LISTA COMPLETA DE COMPUTADORES ------------");
         // Obtém a lista de contatos do banco de dados
         List<Computador> computador = this.getLista();
         
@@ -203,70 +223,69 @@ public class ComputadorDAO {
         }
     }
     
-public void deletar(int id) {
-    PreparedStatement stmt1 = null;
-    PreparedStatement stmt2 = null;
-    PreparedStatement stmt3 = null;
-    ResultSet rs = null;
+    public void deletar(int id) {
+        PreparedStatement stmt1 = null;
+        PreparedStatement stmt2 = null;
+        PreparedStatement stmt3 = null;
+        ResultSet rs = null;
 
-    try {
-        // Inicializa as instruções SQL
-        stmt1 = connection.prepareStatement("DELETE FROM computador WHERE pk_computador = ?");
-        stmt2 = connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
-        stmt3 = connection.prepareStatement("DELETE FROM equipamento WHERE pk_equipamento = ?");
-
-        // Define o valor do parâmetro ID na instrução SQL
-        stmt1.setInt(1, id);
-        stmt2.setInt(1, id);
-
-        // Executa a consulta para obter o fk_equipamento
-        rs = stmt2.executeQuery();
-        
-        if (rs.next()) { // Verifica se há um resultado
-            int pk_equipamento = rs.getInt("fk_equipamento");
-
-            // Define o parâmetro para a exclusão do equipamento
-            stmt3.setInt(1, pk_equipamento);
-
-            // Começa a transação
-            connection.setAutoCommit(false);
-
-            // Executa a exclusão do computador
-            int rows1 = stmt1.executeUpdate();
-            System.out.println("Linhas afetadas em computador: " + rows1);
-
-            // Executa a exclusão do equipamento
-            int rows2 = stmt3.executeUpdate();
-            System.out.println("Linhas afetadas em equipamento: " + rows2);
-
-            // Confirma a transação
-            connection.commit();
-        } else {
-            System.out.println("Nenhum equipamento encontrado para o computador com ID: " + id);
-        }
-
-    } catch (SQLException e) {
         try {
-            if (connection != null) {
-                connection.rollback(); // Reverte a transação em caso de erro
+            // Inicializa as instruções SQL
+            stmt1 = connection.prepareStatement("DELETE FROM computador WHERE pk_computador = ?");
+            stmt2 = connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
+            stmt3 = connection.prepareStatement("DELETE FROM equipamento WHERE pk_equipamento = ?");
+
+            // Define o valor do parâmetro ID na instrução SQL
+            stmt1.setInt(1, id);
+            stmt2.setInt(1, id);
+
+            // Executa a consulta para obter o fk_equipamento
+            rs = stmt2.executeQuery();
+
+            if (rs.next()) { // Verifica se há um resultado
+                int pk_equipamento = rs.getInt("fk_equipamento");
+
+                // Define o parâmetro para a exclusão do equipamento
+                stmt3.setInt(1, pk_equipamento);
+
+                // Começa a transação
+                connection.setAutoCommit(false);
+
+                // Executa a exclusão do computador
+                int rows1 = stmt1.executeUpdate();
+                System.out.println("Linhas afetadas em computador: " + rows1);
+
+                // Executa a exclusão do equipamento
+                int rows2 = stmt3.executeUpdate();
+                System.out.println("Linhas afetadas em equipamento: " + rows2);
+
+                // Confirma a transação
+                connection.commit();
+            } else {
+                System.out.println("Nenhum equipamento encontrado para o computador com ID: " + id);
             }
-        } catch (SQLException rollbackEx) {
-            rollbackEx.printStackTrace();
-        }
-        e.printStackTrace();
-        throw new RuntimeException(e);
-    } finally {
-        // Libera os recursos
-        try {
-            if (rs != null) rs.close();
-            if (stmt1 != null) stmt1.close();
-            if (stmt2 != null) stmt2.close();
-            if (stmt3 != null) stmt3.close();
-            if (connection != null) connection.setAutoCommit(true); // Restaura o modo de commit automático
+            System.out.println("");
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback(); // Reverte a transação em caso de erro
+                }
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            // Libera os recursos
+            try {
+                if (rs != null) rs.close();
+                if (stmt1 != null) stmt1.close();
+                if (stmt2 != null) stmt2.close();
+                if (stmt3 != null) stmt3.close();
+                if (connection != null) connection.setAutoCommit(true); // Restaura o modo de commit automático
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
-
 }

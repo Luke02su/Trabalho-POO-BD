@@ -4,7 +4,7 @@ USE controle_equipamentos_TI;
 
 CREATE TABLE equipamento (
 	 pk_equipamento INT AUTO_INCREMENT PRIMARY KEY, 
-	 tipo VARCHAR(30 NOT NULL,
+	 tipo VARCHAR(30) NOT NULL,
      modelo VARCHAR(30) NOT NULL
 );
 
@@ -12,7 +12,6 @@ CREATE TABLE equipamento (
 CREATE TABLE computador (
     fk_equipamento INT NOT NULL,
 	pk_computador INT AUTO_INCREMENT PRIMARY KEY,
-    modelo VARCHAR(30) NOT NULL,
     processador VARCHAR(30) NOT NULL,
     memoria VARCHAR(30) NOT NULL,
     windows VARCHAR(30) NOT NULL,
@@ -22,7 +21,7 @@ CREATE TABLE computador (
     
     INDEX idx_fk_equipamento (fk_equipamento),
     
-    CONSTRAINT fk_equipamento_computador FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE RESTRICT ON UPDATE RESTRICT
+    CONSTRAINT fk_equipamento_computador FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -33,7 +32,7 @@ CREATE TABLE impressora (
     
     INDEX idx_fk_equipamento (fk_equipamento),
     
-    CONSTRAINT fk_impressora_equipamento FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE RESTRICT ON UPDATE RESTRICT
+    CONSTRAINT fk_impressora_equipamento FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -44,7 +43,7 @@ CREATE TABLE outros_equipamentos (
     
 	INDEX idx_fk_equipamento (fk_equipamento),
     
-    CONSTRAINT fk_equip_genericos FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE RESTRICT ON UPDATE RESTRICT
+    CONSTRAINT fk_equip_genericos FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
@@ -66,48 +65,56 @@ CREATE TABLE envio_equipamento (
 	INDEX idx_fk_equipamento (fk_equipamento),
 	INDEX idx_fk_loja (fk_loja),
     
-	CONSTRAINT fk_equipamento_envio FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE RESTRICT ON UPDATE RESTRICT,
-    CONSTRAINT fk_loja_envio FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON DELETE RESTRICT ON UPDATE CASCADE
+	CONSTRAINT fk_equipamento_envio FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_loja_envio FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
+INSERT equipamento (tipo, modelo) VALUES
+('Microcomputador', 'Dell Optiplex 3060'),
+('Microcomputador', 'Bematech RC-8400'),
+('Microcomputador', 'Dell Optiplex 3050');
 INSERT equipamento (tipo, modelo) VAlUES
-('Computador', 'teste'),
-('Computador', 'teste'),
-('Computador', 'teste');
-INSERT equipamento (tipo) VAlUES
-('Impressora', 'teste'),
-('Impressora', 'teste'),
-('Impressora', 'teste');
-INSERT equipamento (tipo) VALUES
-('Nobreak', 'teste'),
-('Leitor de código de barras', 'teste'),
-('Monitor', 'teste');
+('Multifuncional a laser', 'HP M1132'),
+('Multifuncional a laser', 'Brother 2540'),
+('Fotográfica a jato de tinta', 'Epson L805');
+INSERT equipamento (tipo, modelo) VALUES
+('Nobreak', 'SMS'),
+('Leitor de código de barras', 'Bematech'),
+('Monitor', 'AOC');
 
+INSERT INTO computador (fk_equipamento, pk_computador, processador, memoria, windows, armazenamento, formatacao, manutencao) VALUES
+(1, 130, 'i3 8100T', '8GB DDR4', '11 Pro', 'SSD 240GB', 'S', 'S'),
+(2, NULL, 'Celeron N5095', '4GB DDR4', '11 Pro', 'SSD NvME 256GB', 'S', 'S'),
+(3, NULL, 'i3 6100T', '4GB DDR4', '11 Pro', 'HDD 500GB', 'S', 'N');
 
-INSERT INTO computador (fk_equipamento, pk_computador, modelo, processador, memoria, windows, armazenamento, formatacao, manutencao) VALUES
-(1, 130, 'teste', 'i3 8100T', '8GB DDR4', '11 Pro', 'SSD 240GB', 'S', 'S'),
-(2, 132, 'teste', 'Celeron N5095', '4GB DDR4', '11 Pro', 'SSD NvME 256GB', 'S', 'S'),
-(3, 133, 'teste', 'i3 6100T', '4GB DDR4', '11 Pro', 'HDD 500GB', 'S', 'S');
+INSERT INTO impressora (fk_equipamento, pk_impressora, revisao) VALUES
+(4, 35, 'S'),
+(5, NULL, 'S'),
+(6, NULL, 'S');
 
-INSERT impressora (fk_equipamento, pk_impressora, revisao) VALUES
-(4, 35, 1),
-(5, 36, 1),
-(6, 37, 1);
+INSERT INTO outros_equipamentos (fk_equipamento, pk_outros_equipamentos, descricao) VALUES
+(7, 203, '600 VA'),
+(8, NULL, 'Sem fio'),
+(9, NULL, '17 polegadas');
 
-INSERT outros_equipaentos (fk_equipamento, pk_outros_equipamentos, especificacao) VALUES
-(10, NULL, '600 VA'),
-(11, NULL, 'Sem fio'),
-(12, NULL, '17 polegadas');
+INSERT INTO loja (pk_loja, cnpj, cidade, telefone) VALUES 
+(NULL, 283492323, 'Patrocínio', 998222343),
+(NULL, 287472722, 'Patos de Minas', 99127876),
+(NULL, 289019112, 'Paracatu', 997192931);
 
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
-(1, 100, '2024-08-01', 'BIOS atualizada para tentar corrigir reinício repentino da máquina'),
-(2, 27, '2024-08-02', 'Trocar máquina do gerente. A que voltar será destinada ao EFN'),
-(3, 27, '2024-08-06', 'Substituir o computador do balcão que foi queimado.');
+(1, 1, '2024-08-01', 'BIOS atualizada para tentar corrigir reinício repentino da máquina.'),
+(2, 2, '2024-08-02', 'Trocar máquina do gerente. A que voltar será destinada ao EFN.'),
+(3, 3, '2024-08-06', 'Substituir o computador do balcão que foi queimado.');
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
-(4, 23, '2024-06-20', 'Troca da impressora Brother 1617 (engasgando papel).'),
-(5, 0, '2024-07-02', 'Trocar de impressora (engasgando papel).'),
-(6, 8, '2024-07-27', 'Trocar de impressora (engasgando papel).');
-
+(4, 1, '2024-06-20', 'Troca da impressora Brother 1617, engasgando papel).'),
+(5, 3, '2024-07-02', 'Troca de impressora, não puxa papel.'),
+(6, 2, '2024-07-27', 'Troca de impressora, borrando papel.');
+INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
+(7, 3, '2024-06-14', 'Troca de nobreak queimado.'),
+(8, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
+(9, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
 
 SELECT * FROM equipamento;
 SELECT * FROM computador;
@@ -116,44 +123,64 @@ SELECT * FROM outros_equipamentos;
 SELECT * FROM loja;
 SELECT * FROM envio_equipamento;
 
-CREATE VIEW view_equipamento_data_envio  AS (
-	SELECT e.pk_equipamento, ee.fk_loja, e.modelo, data_envio
+CREATE VIEW view_computador_data_envio AS (
+	SELECT c.pk_computador AS id_computador, ee.fk_loja AS loja, e.modelo, ee.data_envio, ee.observacao
 	FROM equipamento e
-    INNER JOIN envio_equipamento ee
+    INNER JOIN computador c
+    ON e.pk_equipamento = c.fk_equipamento
+    LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
 );
 
-SELECT * FROM view_equipamento_data_envio
-LEFT JOIN impressora
-ON e.pk_equi
-
-CREATE VIEW view_equipamento_retorno_envio  AS (
-	SELECT e.pk_equipamento, ee.fk_loja, e.modelo
-	FROM equipamento e
-    INNER JOIN envio_equipamento ee
+CREATE VIEW view_outros_equip_envio AS (
+	SELECT pk_outros_equipamentos AS id_outros, e.tipo, e.modelo, o.descricao, ee.data_envio, ee.observacao
+    FROM equipamento e
+    INNER JOIN outros_equipamentos o
+    ON e.pk_equipamento = o.fk_equipamento
+	LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
 );
 
-CREATE VIEW equipamento_nao_enviado AS (
-	SELECT 
-	
-
+CREATE VIEW view_impressora_envio AS (
+	SELECT pk_impressora AS id_impressora, e.modelo, ee.data_envio, ee.observacao
+    FROM equipamento e
+    INNER JOIN impressora i
+    ON e.pk_equipamento = i.fk_equipamento
+	LEFT JOIN envio_equipamento ee
+    ON ee.fk_equipamento = e.pk_equipamento
 );
 
 
+SELECT * FROM view_computador_envio;
+SELECT * FROM view_impressora_envio;
+SELECT * FROM view_outros_equip_envio;
 
 
+CREATE TABLE log_equipamentos_descartados (
+	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
+    fk_equipamento INT NOT NULL,
+    motivo VARCHAR(30) NOT NULL,
+	horario TIMESTAMP NOT NULL
+);
 
-equipamentos_descartados log
-id_equipamento
-observacao
+DELIMITER &&
+CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
+ON equipamento
+FOR EACH ROW
+BEGIN
+	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, motivo, horario) VALUES (NULL, OLD.pk_equipamento, 'Velho ou estragado', NOW());
+END&&
+DELIMITER ;
 
-TRIGGER descartado (
-	before delete
+DELIMITER %%
+CREATE PROCEDURE proc_deletar_equipamento (IN id_equipamento INT)
+BEGIN
+	DELETE FROM equipamento WHERE pk_equipamento = id_equipamento;
+END%%
+DELIMITER ;
 
-)
-;
+CALL proc_deletar_equipamento (9);
 
+SELECT * FROM log_equipamentos_descartados;
 
--- onde usar interface?
-drop schema controle_equipamentos_ti;
+-- DROP SCHEMA controle_equipamentos_ti;

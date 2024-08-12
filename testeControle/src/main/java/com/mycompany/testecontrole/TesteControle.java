@@ -6,15 +6,20 @@ public class TesteControle {
     public static void main(String[] args) {
         
         Scanner scan = new Scanner(System.in);
-        int opcao = 0;
+  
         ComputadorDAO daoC = new ComputadorDAO();
         ImpressoraDAO daoI = new ImpressoraDAO();
         
+        int opcao = 0;
+        
         do {
-            System.out.println("--- MENU DE OPÇÕES ---");
+            System.out.println("--- MENU DE ENTIDADES ---");
             System.out.println("Escolha uma opção: ");
             System.out.println("1. CRUD de Computador.");
             System.out.println("2. CRUD de Impressora.");
+            System.out.println("3. CRUD de Outro Equipamento.");
+            System.out.println("4. CRUD de Loja.");
+            System.out.println("5. CRUD de Envio de Equipamento.");
             
             System.out.print("\nEscolha: ");
             opcao = (scan.nextInt());
@@ -27,7 +32,7 @@ public class TesteControle {
                     System.out.println("2. Ler dados de todos os computadores.");
                     System.out.println("3. Ler dados de um computador.");
                     System.out.println("4. Atualizar dados de um computador.");
-                    System.out.println("5. Atualizar dados de um computador.");
+                    System.out.println("5. Deletar dados de um computador.");
                     
                     System.out.print("\nEscolha: ");
                     opcao = (scan.nextInt());
@@ -36,20 +41,16 @@ public class TesteControle {
                     if (opcao == 1) {
                         System.out.print("Digite os dados do computador a serem cadastrados: ");
                         
-                        System.out.print("Digite a chave estrangeira de equipamento: ");
-                        int id_equipamento = (scan.nextInt());
-                        scan.nextLine();
-                        
-                        Computador computador = new Computador();
-                        computador.setPk_equipamento(id_equipamento);
                         
                         System.out.print("Digite o tipo de computador: ");
-                        String tipo = (scan.nextLine());
-                       
+                        String tipo = (scan.nextLine());  
+                        Computador computador = new Computador();
                         computador.setTipo(tipo);
+                        scan.nextLine();
+                        
                         System.out.print("Digite o modelo: ");
                         String modelo = (scan.nextLine());
-                       
+                        scan.nextLine();
                         
                         computador.setModelo(modelo);
                         System.out.print("Digite o processador: ");
@@ -132,16 +133,16 @@ public class TesteControle {
                     } else {
                         System.out.println("Opção inválida. Escolha novamente.");
                     }
-                    return;
+                   
                 }
                 case 2: {
                     
-                    System.out.println("--- MENU do CRUD de Impressora ---");
+                    System.out.println("--- Menu do CRUD de Impressora ---");
                     System.out.println("1. Criar dados para uma impressora.");
                     System.out.println("2. Ler dados de todas impressoras.");
                     System.out.println("3. Ler dados de uma impressora.");
                     System.out.println("4. Atualizar dados de uma impressora.");
-                    System.out.println("5. Atualizar dados de uma impressora.");
+                    System.out.println("5. Deletar dados de uma impressora.");
                     
                     System.out.print("\nEscolha: ");
                     opcao = (scan.nextInt());
@@ -150,18 +151,13 @@ public class TesteControle {
                     if(opcao == 1) {
                         System.out.println("Digite os dados de impressora a serem cadastrados: ");
                         
-                        System.out.print("Digite a chave estrangeira de impressora: ");
-                        int id_equipamento = scan.nextInt();
-                        scan.nextLine(); // Consumir a nova linha
-
                         // Supondo que Impressora tenha um construtor padrão
                         Impressora impressora = new Impressora();
-
-                        impressora.setPk_equipamento(id_equipamento);
 
                         System.out.print("Digite o tipo: ");
                         String tipo = scan.nextLine();
                         impressora.setTipo(tipo);
+                        scan.nextLine();
 
                         System.out.print("Digite o modelo: ");
                         String modelo = scan.nextLine();
@@ -174,9 +170,46 @@ public class TesteControle {
                         // Chama o método adicionar
                         daoI.adicionar(impressora);
 
+                    } else if (opcao == 2) {
+                        daoI.listar();
+                    } else if (opcao == 3) {
+                        System.out.print("Digite o ID do computador a ser lido: ");
+                        opcao = (scan.nextInt());
+                        daoI.listarID(opcao);
+                    } else if (opcao == 4) {
+                        
+                        
+                            System.out.print("Digite o ID da impressora a ser atualizada: ");
+                            int id = scan.nextInt();
+                            scan.nextLine(); // Limpa o buffer
+                            
+                            Impressora impressora = new Impressora();
+
+                            // Solicita novos dados para o computador
+                            System.out.print("Digite o novo tipo: ");
+                            String tipo = scan.nextLine();
+                            impressora.setTipo(tipo);
+
+                            System.out.print("Digite o novo modelo: ");
+                            String modelo = scan.nextLine();
+                            impressora.setModelo(modelo);
+
+                            System.out.print("Revisada? ");
+                            String revisao = scan.nextLine();
+                            impressora.setRevisao(revisao);
+                            
+                        daoI.atualizar(impressora, id);
+                    } else if (opcao == 5) {
+                        System.out.print("Digite o ID da impressora a ser atualizada: ");
+                        int id = scan.nextInt();
+                        scan.nextLine(); // Limpa o buffer
+                            
+                        daoI.deletar(id);
                     }
+                } default: {
+                    System.out.println("Opção inválida. Digite uma opção válida.\n");
                 }
-            }
-        }while (opcao != 3);
+            } 
+        } while (opcao != 3);
     }
 }
