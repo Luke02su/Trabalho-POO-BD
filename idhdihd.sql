@@ -116,6 +116,8 @@ INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) 
 (8, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
 (9, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
 
+describe equipamento;
+
 SELECT * FROM equipamento;
 SELECT * FROM computador;
 SELECT * FROM impressora;
@@ -151,7 +153,7 @@ CREATE VIEW view_impressora_envio AS (
 );
 
 
-SELECT * FROM view_computador_envio;
+SELECT * FROM view_computador_data_envio;
 SELECT * FROM view_impressora_envio;
 SELECT * FROM view_outros_equip_envio;
 
@@ -170,7 +172,7 @@ FOR EACH ROW
 BEGIN
 	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, motivo, horario) VALUES (NULL, OLD.pk_equipamento, 'Velho ou estragado', NOW());
 END&&
-DELIMITER ;
+DELIMITER ; -- tipo e modelo
 
 DELIMITER %%
 CREATE PROCEDURE proc_deletar_equipamento (IN id_equipamento INT)
