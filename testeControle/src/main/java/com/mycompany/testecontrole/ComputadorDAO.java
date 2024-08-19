@@ -31,7 +31,7 @@ public class ComputadorDAO {
             PreparedStatement stmt1 = connection.prepareStatement(sql1, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt1.setString(1, computador.getTipo());
             stmt1.setString(2, computador.getModelo());
-            stmt1.executeUpdate();
+            stmt1.execute();
 
             // Recuperar a chave primária gerada para o equipamento
             ResultSet generatedKeys = stmt1.getGeneratedKeys();
@@ -48,7 +48,7 @@ public class ComputadorDAO {
                 stmt2.setString(6, computador.getFormatacao());
                 stmt2.setString(7, computador.getManutencao());
 
-                stmt2.executeUpdate();
+                stmt2.execute();
                 stmt2.close();
             }
 
@@ -91,6 +91,7 @@ public class ComputadorDAO {
                 // Cria um novo objeto Contato e define seus atributos com base nos dados do banco de dados
                 Computador computador = new Computador();
                 computador.setPk_equipamento(rs.getInt("Pk_equipamento"));
+                computador.setTipo(rs.getString("tipo"));
                 computador.setModelo(rs.getString("modelo"));
                 computador.setPk_computador(rs.getInt("pk_computador")); // ID do contato
                 computador.setProcessador(rs.getString("processador")); // Nome do contato
@@ -122,6 +123,7 @@ public class ComputadorDAO {
             System.out.println("ID de equipamento: " + c.getPk_equipamento()); // Imprime o nome do contato
             System.out.println("ID de computador: " + c.getPk_computador()); // Imprime o email do contato
             System.out.println("Processador: " + c.getProcessador()); // Imprime o endereço do contato
+            System.out.println("Tipo: " + c.getTipo()); // Imprime o endereço do contato
             System.out.println("Modelo: " + c.getModelo()); // Imprime o endereço do contato
             System.out.println("Memória RAM: " + c.getMemoria()); // Imprime o endereço do contato
             System.out.println("Versão do Windows: " + c.getWindows());
@@ -138,12 +140,14 @@ public class ComputadorDAO {
         List<Computador> computador = this.getLista();
         
         // Itera sobre cada contato e imprime seus detalhes
-       
+       boolean inserido = false;
+        
         for (Computador c : computador) {
             if(id == c.getPk_computador()) {
                 System.out.println("ID de equipamento: " + c.getPk_equipamento()); // Imprime o nome do contato
                 System.out.println("ID de computador: " + c.getPk_computador()); // Imprime o email do contato
                 System.out.println("Processador: " + c.getProcessador()); // Imprime o endereço do contato
+                System.out.println("Tipo: " + c.getTipo());
                 System.out.println("Modelo: " + c.getModelo()); // Imprime o endereço do contato
                 System.out.println("Memória RAM: " + c.getMemoria()); // Imprime o endereço do contato
                 System.out.println("Versão do Windows: " + c.getWindows());
@@ -151,11 +155,13 @@ public class ComputadorDAO {
                 System.out.println("Formatado? " + c.getFormatacao());
                 System.out.println("MP E/OU MC: " + c.getManutencao());
                 System.out.println("----------------------------------");
-                break;
-            } else {
-                System.out.println("Sinto muito! Este computador não existe.");
+                inserido = true;
                 break;
             }
+        }
+        
+        if (inserido == false) {
+            System.out.println("Sinto muito! Este computador não existe.");
         }
     }
     

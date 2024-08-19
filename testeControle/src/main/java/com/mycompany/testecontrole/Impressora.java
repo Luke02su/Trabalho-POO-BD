@@ -8,7 +8,7 @@ public class Impressora extends Equipamento {
         
     }
 
-    public Impressora(int pk_impressora, String revisao, int pk_equipamento, String tipo, String modelo) {
+    public Impressora(int pk_equipamento, String tipo, String modelo, int pk_impressora, String revisao) {
         super(pk_equipamento, tipo, modelo);
         this.pk_impressora = pk_impressora;
         this.revisao = revisao;

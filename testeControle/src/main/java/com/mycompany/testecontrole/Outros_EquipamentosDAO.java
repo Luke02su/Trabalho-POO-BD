@@ -20,7 +20,7 @@ public class Outros_EquipamentosDAO {
     // Construtor da classe ContatoDAO
     public void adicionar(Outros_Equipamentos outros) {
         String sql1 = "INSERT INTO equipamento (tipo, modelo) VALUES (?, ?)";
-        String sql2 = "INSERT INTO impressora (fk_equipamento, revisao) VALUES (?, ?)";
+        String sql2 = "INSERT INTO outros_equipamentos (fk_equipamento, descricao) VALUES (?, ?)";
 
         try {
             // Start the transaction
@@ -28,22 +28,22 @@ public class Outros_EquipamentosDAO {
 
             // Insert into equipamento
             PreparedStatement stmt1 = connection.prepareStatement(sql1, PreparedStatement.RETURN_GENERATED_KEYS);
-            stmt1.setString(1, impressora.getTipo());
-            stmt1.setString(2, impressora.getModelo());
+            stmt1.setString(1, outros.getTipo());
+            stmt1.setString(2, outros.getModelo());
             stmt1.executeUpdate();
 
             // Retrieve the generated primary key for equipamento
             ResultSet generatedKeys = stmt1.getGeneratedKeys();
             if (generatedKeys.next()) {
-                int equipamentoId = generatedKeys.getInt(1);
+                int equipamentoid = generatedKeys.getInt(1);
 
                 // Set the primary key in the impressora object
-                outros.setPk_equipamento(equipamentoId);
+                outros.setPk_equipamento(equipamentoid);
 
                 // Insert into impressora using the generated key
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setInt(1, outros.getPk_equipamento());
-                stmt2.setString(2, outros.getRevisao());
+                stmt2.setString(2, outros.getDescricao());
                 stmt2.executeUpdate();
 
                 stmt2.close();
@@ -51,7 +51,7 @@ public class Outros_EquipamentosDAO {
 
             // Commit the transaction
             connection.commit();
-            System.out.println("Impressora adicionada com sucesso!"); // Success message
+            System.out.println("Outro equipamento adicionado com sucesso!"); // Success message
             stmt1.close();
         } catch (SQLException e) {
             try {
@@ -59,7 +59,7 @@ public class Outros_EquipamentosDAO {
             } catch (SQLException rollbackEx) {
                 throw new RuntimeException("Erro ao fazer rollback!", rollbackEx);
             }
-            throw new RuntimeException("Erro ao adicionar impressora!", e);
+            throw new RuntimeException("Erro ao adicionar outro equipamento!", e);
         } finally {
             try {
                 connection.setAutoCommit(true); // Reset auto-commit to true
@@ -70,13 +70,13 @@ public class Outros_EquipamentosDAO {
     }
 
 
-    public List<Impressora> getLista() {
+    public List<Outros_Equipamentos> getLista() {
         try {
             // Cria uma lista para armazenar os contatos recuperados do banco de dados
-            List<Impressora> impressoras = new ArrayList<Impressora>();
+            List<Outros_Equipamentos> outros_equip = new ArrayList<Outros_Equipamentos>();
 
             // Comando SQL para selecionar todos os registros da tabela contatos
-            PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM impressora INNER JOIN equipamento ON pk_equipamento = fk_equipamento");
+            PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM outros_equipamentos INNER JOIN equipamento ON pk_equipamento = fk_equipamento");
             
             // Executa a consulta e obtém o resultado
             ResultSet rs = stmt.executeQuery();
@@ -84,71 +84,75 @@ public class Outros_EquipamentosDAO {
             // Itera sobre cada registro retornado pelo ResultSet
             while (rs.next()) {
                 // Cria um novo objeto Contato e define seus atributos com base nos dados do banco de dados
-                Impressora impressora = new Impressora();
-                impressora.setPk_equipamento(rs.getInt("Pk_equipamento"));
-                impressora.setTipo(rs.getString("tipo"));
-                impressora.setModelo(rs.getString("modelo"));
-                impressora.setPk_impressora(rs.getInt("pk_impressora")); // ID do contato
-                impressora.setRevisao(rs.getString("revisao"));
+                Outros_Equipamentos outros = new Outros_Equipamentos();
+                outros.setPk_equipamento(rs.getInt("Pk_equipamento"));
+                outros.setTipo(rs.getString("tipo"));
+                outros.setModelo(rs.getString("modelo"));
+                outros.setPk_outros_equipamentos(rs.getInt("pk_outros_equipamentos")); // ID do contato
+                outros.setDescricao(rs.getString("descricao"));
 
                 // Adiciona o contato à lista de contatos
-                impressoras.add(impressora);
+                outros_equip.add(outros);
             }
             rs.close(); // Fecha o ResultSet
             stmt.close(); // Fecha o PreparedStatement
-            return impressoras; // Retorna a lista de contatos
+            return outros_equip; // Retorna a lista de contatos
         } catch (SQLException e) {
             // Lança uma exceção em caso de erro na execução do SQL
             throw new RuntimeException(e);
         }
     }
     
-    public void listar() {
+        public void listar() {
         System.out.println("------------ LISTAS COMPLETAS DE IMPRESSORAS------------");
         // Obtém a lista de contatos do banco de dados
-        List<Impressora> impressora = this.getLista();
+        List<Outros_Equipamentos> outros_equip = this.getLista();
         
         // Itera sobre cada contato e imprime seus detalhes
-        for (Impressora i : impressora) {
-            System.out.println("ID de equipamento: " + i.getPk_equipamento()); // Imprime o nome do contato
-            System.out.println("ID de impressora " + i.getPk_impressora()); // Imprime o email do contato
-            System.out.println("Tipo: " + i.getTipo());
-            System.out.println("Modelo: " + i.getModelo());
-            System.out.println("Revisada? " + i.getRevisao());
+        for (Outros_Equipamentos o : outros_equip) {
+            System.out.println("ID de equipamento: " + o.getPk_equipamento()); // Imprime o nome do contato
+            System.out.println("ID de equipamento genérico: " + o.getPk_outros_equipamentos()); // Imprime o email do contato
+            System.out.println("Tipo: " + o.getTipo());
+            System.out.println("Modelo: " + o.getModelo());
+            System.out.println("Descrição:" + o.getDescricao());
             System.out.println("----------------------------------");
         }
     }
+        
     
-        public void listarID(int id) {
+    public void listarID(int id) {
         System.out.println("------------ LISTA COMPLETA DE IMPRESSORA " + id + "------------");
         // Obtém a lista de contatos do banco de dados
-        List<Impressora> impressora = this.getLista();
+        List<Outros_Equipamentos> outros_equip = this.getLista();
         
         // Itera sobre cada contato e imprime seus detalhes
+        
+        boolean inserido = false;
        
-        for (Impressora i : impressora) {
-            if(id == i.getPk_impressora()) {
-                System.out.println("ID de equipamento: " + i.getPk_equipamento()); // Imprime o nome do contato
-                System.out.println("ID de computador: " + i.getPk_impressora()); // Imprime o email do contato
-                System.out.println("Tipo: " + i.getTipo());
-                System.out.println("Modelo: " + i.getModelo()); // Imprime o endereço do cont
-                System.out.println("Revisada? " + i.getRevisao()); 
+        for (Outros_Equipamentos o : outros_equip) {
+            if(id == o.getPk_outros_equipamentos()) {
+                System.out.println("ID de equipamento: " + o.getPk_equipamento()); // Imprime o nome do contato
+                System.out.println("ID de equipamento genérico: " + o.getPk_outros_equipamentos()); // Imprime o email do contato
+                System.out.println("Tipo: " + o.getTipo());
+                System.out.println("Modelo: " + o.getModelo());
+                System.out.println("Descrição: " + o.getDescricao());
                 System.out.println("----------------------------------");
+                inserido = true;
                 break;
-            } else {
-                System.out.println("Sinto muito! Este computador não existe.");
-                break;
-            }
+            } 
+        }
+        if (inserido == false) {
+            System.out.println("Sinto muito! Este equipamento genérico não existe.");
         }
     }
-        
-        public void atualizar(Impressora impressora, int id) {
+    
+    public void atualizar(Outros_Equipamentos outros_equip, int id) {
         String sql1 = "UPDATE equipamento SET tipo = ?, modelo = ? WHERE pk_equipamento = ?";
-        String sql2 = "UPDATE impressora SET revisao = ? WHERE pk_impressora = ?";
+        String sql2 = "UPDATE outros_equipamentos SET descricao = ? WHERE pk_outros_equipamentos = ?";
 
         try {
             // Primeiro, selecione o pk_equipamento associado ao id do computador
-            PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
+            PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
 
@@ -159,8 +163,8 @@ public class Outros_EquipamentosDAO {
 
                 // Atualizando os dados de equipamento
                 PreparedStatement stmt1 = connection.prepareStatement(sql1);
-                stmt1.setString(1, impressora.getTipo());
-                stmt1.setString(2, impressora.getModelo());
+                stmt1.setString(1, outros_equip.getTipo());
+                stmt1.setString(2, outros_equip.getModelo());
                 stmt1.setInt(3, pk_equipamento);
 
                 int rows1 = stmt1.executeUpdate();
@@ -168,17 +172,17 @@ public class Outros_EquipamentosDAO {
 
                 // Atualizando os dados de computador
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
-                stmt2.setString(1, impressora.getRevisao());
+                stmt2.setString(1, outros_equip.getDescricao());
                 stmt2.setInt(2, id);
 
                 int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows2 + "\n");
+                System.out.println("Linhas afetadas em equipamento genérico: " + rows2 + "\n");
 
                 connection.commit();
                 stmt1.close();
                 stmt2.close();
             } else {
-                System.out.println("Nenhum computador encontrado com o ID: " + id);
+                System.out.println("Dados não atualizados! Nenhum equipamento genérico encontrado com o ID: " + id);
             }
 
             rs.close();
@@ -209,8 +213,8 @@ public class Outros_EquipamentosDAO {
 
         try {
             // Inicializa as instruções SQL
-            stmt1 = connection.prepareStatement("DELETE FROM impressora WHERE pk_impressora = ?");
-            stmt2 = connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
+            stmt1 = connection.prepareStatement("DELETE FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
+            stmt2 = connection.prepareStatement("SELECT fk_equipamento FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
             stmt3 = connection.prepareStatement("DELETE FROM equipamento WHERE pk_equipamento = ?");
 
             // Define o valor do parâmetro ID na instrução SQL
@@ -231,16 +235,17 @@ public class Outros_EquipamentosDAO {
 
                 // Executa a exclusão do computador
                 int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em impressora: " + rows1);
+                System.out.println("Linhas afetadas em equipamentos genéricos: " + rows1);
 
                 // Executa a exclusão do equipamento
                 int rows2 = stmt3.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows2 + "\n");
+                System.out.println("Linhas afetadas em equipamentos genéricos: " + rows2 + "\n");
 
                 // Confirma a transação
                 connection.commit();
+                System.out.println("Equipamento genérico com ID: " + id + "deletado");
             } else {
-                System.out.println("Nenhum equipamento encontrado para a impressora com ID: " + id);
+                System.out.println("Nenhum equipamento genérico encontrado com o ID: " + id);
             }
             System.out.println("");
         } catch (SQLException e) {

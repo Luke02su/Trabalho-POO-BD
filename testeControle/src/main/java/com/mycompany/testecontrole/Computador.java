@@ -14,7 +14,7 @@ public class Computador extends Equipamento {
         
     }
 
-    public Computador(int pk_computador, String processador, String memoria, String windows, String armazenamento, String formatacao, String manutencao, int pk_equipamento, String tipo, String modelo) {
+    public Computador(int pk_equipamento, String tipo, String modelo, int pk_computador, String processador, String memoria, String windows, String armazenamento, String formatacao, String manutencao) {
         super(pk_equipamento, tipo, modelo);
         this.pk_computador = pk_computador;
         this.processador = processador;

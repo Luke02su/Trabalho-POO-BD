@@ -125,6 +125,8 @@ public class ImpressoraDAO {
         List<Impressora> impressora = this.getLista();
         
         // Itera sobre cada contato e imprime seus detalhes
+        
+        boolean inserido = false;
        
         for (Impressora i : impressora) {
             if(id == i.getPk_impressora()) {
@@ -134,11 +136,12 @@ public class ImpressoraDAO {
                 System.out.println("Modelo: " + i.getModelo()); // Imprime o endereço do cont
                 System.out.println("Revisada? " + i.getRevisao()); 
                 System.out.println("----------------------------------");
+                inserido = true;
                 break;
-            } else {
-                System.out.println("Sinto muito! Este computador não existe.");
-                break;
-            }
+            } 
+        }
+        if (inserido == false) {
+            System.out.println("Sinto muito! Este computador não existe.");
         }
     }
         
@@ -172,13 +175,13 @@ public class ImpressoraDAO {
                 stmt2.setInt(2, id);
 
                 int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows2 + "\n");
+                System.out.println("Linhas afetadas em impressora: " + rows2 + "\n");
 
                 connection.commit();
                 stmt1.close();
                 stmt2.close();
             } else {
-                System.out.println("Nenhum computador encontrado com o ID: " + id);
+                System.out.println("Dados não atualizados! Nenhuma impressora encontrada com o ID: " + id);
             }
 
             rs.close();
