@@ -125,7 +125,7 @@ SELECT * FROM outros_equipamentos;
 SELECT * FROM loja;
 SELECT * FROM envio_equipamento;
 
-CREATE VIEW view_computador_data_envio AS (
+CREATE VIEW view_computador_envio AS (
 	SELECT c.pk_computador AS id_computador, ee.fk_loja AS loja, e.modelo, ee.data_envio, ee.observacao
 	FROM equipamento e
     INNER JOIN computador c
@@ -153,7 +153,7 @@ CREATE VIEW view_impressora_envio AS (
 );
 
 
-SELECT * FROM view_computador_data_envio;
+SELECT * FROM view_computador_envio;
 SELECT * FROM view_impressora_envio;
 SELECT * FROM view_outros_equip_envio;
 
@@ -161,6 +161,8 @@ SELECT * FROM view_outros_equip_envio;
 CREATE TABLE log_equipamentos_descartados (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
     fk_equipamento INT NOT NULL,
+    tipo VARCHAR (30) NOT NULL,
+    modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	horario TIMESTAMP NOT NULL
 );
@@ -170,7 +172,7 @@ CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
 ON equipamento
 FOR EACH ROW
 BEGIN
-	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, motivo, horario) VALUES (NULL, OLD.pk_equipamento, 'Velho ou estragado', NOW());
+	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, horario) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW());
 END&&
 DELIMITER ; -- tipo e modelo
 
