@@ -7,6 +7,7 @@ que ainda não foram enviados.*/
 CREATE SCHEMA controle_equipamentos_TI
 DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_bin;
+USE controle_equipamentos_TI;
 
 -- Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)
 CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2024';
@@ -90,8 +91,6 @@ CREATE TABLE envio_equipamento (
     CONSTRAINT fk_loja_envio FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Habilitando o respectivo banco de dados para o uso.
-USE controle_equipamentos_TI;
 -- Mostrando as tabelas do banco controle_equipamentos_TI.
 SHOW TABLES;
 
@@ -197,7 +196,7 @@ CREATE TABLE log_equipamentos_descartados (
     tipo VARCHAR (30) NOT NULL,
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
-	horario TIMESTAMP NOT NULL
+	data DATE NOT NULL
 );
 
 -- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa.
@@ -206,11 +205,11 @@ CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
 ON equipamento
 FOR EACH ROW
 BEGIN
-	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, horario) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW());
+	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, data) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW());
 END&&
 DELIMITER ;
 
--- Croaçãode PROCEDURE a fim de automatizar o processo, via banco, de DELETE de um determinado equipamento. (Ideal fazer pelo Java.)
+-- Criação de PROCEDURE a fim de automatizar o processo, via banco, de DELETE de um determinado equipamento. (Ideal fazer pelo Java.)
 DELIMITER %%
 CREATE PROCEDURE proc_deletar_equipamento (IN id_equipamento INT)
 BEGIN
