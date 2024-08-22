@@ -1,8 +1,10 @@
 /*Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI, os
 quais são responsáveis pela manutenção e controle de envios de equipamentos relacionados à TI para as suas demais filiais. 
-O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, integrado este banco MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
+O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, integrado este banco 
+MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
 Desse modo, facilita-se a inserção, listagem, atualização e deleção de dados.
-Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho que atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
+Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho que 
+atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
 
 -- Criação do banco de dados 'controle_equipamentos_ti'; definindo caracteres especiais e case-sensitive padrões; utilizando o banco.
 CREATE SCHEMA controle_equipamentos_TI
