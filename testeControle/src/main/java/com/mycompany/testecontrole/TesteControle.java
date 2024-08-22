@@ -10,6 +10,7 @@ public class TesteControle {
         ComputadorDAO daoC = new ComputadorDAO();
         ImpressoraDAO daoI = new ImpressoraDAO();
         Outros_EquipamentosDAO daoO = new Outros_EquipamentosDAO();
+        LojaDAO daoL = new LojaDAO();
         
         int opcao = 0;
         
@@ -287,7 +288,37 @@ public class TesteControle {
                         daoO.deletar(opcao);
                     }
                     break;
-                } default: {
+                } case 4: {
+                    
+                    System.out.println("--- Menu do CRUD de Loja ---");
+                    System.out.println("Escolha uma opção:");
+                    System.out.println("1. Criar dados para uma loja.");
+                    System.out.println("2. Ler dados de todas lojas.");
+                    System.out.println("3. Ler dados de uma loja.");
+                    System.out.println("4. Atualizar dados de uma loja.");
+                    System.out.println("5. Deletar dados de uma loja.");
+                    
+                    System.out.print("\nEscolha: ");
+                    opcao = (scan.nextInt());
+                    System.out.println("");
+                    
+                    
+                    if (opcao == 1) {
+                        
+                    } else if (opcao == 2) {
+                        daoL.listar();
+                    } else if (opcao == 3) {
+                        System.out.print("Digite o ID de uma loja a ser lido: ");
+                        opcao = (scan.nextInt());
+                        daoL.listarID(opcao);
+                    } else if (opcao == 4) {
+                        
+                    } else if (opcao == 5) {
+                    
+                    }
+                        
+                }
+                    default: {
                     System.out.println("Opção inválida. Digite uma opção válida.\n");
                 }
             } 
