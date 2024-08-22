@@ -9,14 +9,32 @@ DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_bin;
 USE controle_equipamentos_TI;
 
--- Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)
+/*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
+não se pode selecionar mais de uma tabela a serem concedidas os privilégios, deu-se a todos e depois revogou aquelas relativas a
+a um papael de DBA. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)*/
 CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2024';
 CREATE ROLE aux_ti;
 GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.*
+ON controle_equipamentos_ti.equipamento
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.computador
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.impressora
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.outros_equipamentos
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.loja
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.envio_equipamento
 TO aux_ti;
 GRANT aux_ti TO 'auxiliar01_ti'@'%';
 SET DEFAULT ROLE 'aux_ti' TO 'auxiliar_ti'@'%';
+FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
 SHOW GRANTS FOR aux_ti;
@@ -154,8 +172,16 @@ SELECT * FROM outros_equipamentos;
 SELECT * FROM loja;
 SELECT * FROM envio_equipamento;
 
+-- Criando uma VIEW detalhada, em que há os atributios modelo e tipo advindos de 'equipamento', para o envio de equipamento, que será usada para listar os dados de 'Outros_EquipamentosDAO', no Java.
+CREATE VIEW view_equipamento_envio_detalhado AS (
+	SELECT eq.pk_envio, eq.fk_equipamento, q.modelo, q.tipo, eq.fk_loja, DATE_FORMAT(eq.data_envio, "%d/%m/%Y") AS data_envio,  eq.observacao
+    FROM envio_equipamento eq
+    INNER JOIN equipamento q
+    ON eq.fk_equipamento = q.pk_equipamento
+);
+
 -- Criando uma VIEW para o envio de computador, na qual pode-se ver os que foram e os que não foram enviados.
-CREATE VIEW view_computador_envio AS (
+CREATE VIEW view_computador_enviado_nao_enviado AS (
 	SELECT c.pk_computador AS id_computador, ee.fk_loja AS loja, e.modelo, ee.data_envio, ee.observacao
 	FROM equipamento e
     INNER JOIN computador c
@@ -165,7 +191,7 @@ CREATE VIEW view_computador_envio AS (
 );
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver os que foram e os que não foram enviadas.
-CREATE VIEW view_impressora_envio AS (
+CREATE VIEW view_impressora_enviada_nao_enviada AS (
 	SELECT pk_impressora AS id_impressora, e.modelo, ee.data_envio, ee.observacao
     FROM equipamento e
     INNER JOIN impressora i
@@ -174,8 +200,8 @@ CREATE VIEW view_impressora_envio AS (
     ON ee.fk_equipamento = e.pk_equipamento
 );
 
--- Criando uma VIEW para o envio de ouyros_equipamentos, na qual pode-se ver os que foram e os que não foram enviados.
-CREATE VIEW view_outros_equip_envio AS (
+-- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que foram e os que não foram enviados.
+CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
 	SELECT pk_outros_equipamentos AS id_outros, e.tipo, e.modelo, o.descricao, ee.data_envio, ee.observacao
     FROM equipamento e
     INNER JOIN outros_equipamentos o
@@ -184,10 +210,11 @@ CREATE VIEW view_outros_equip_envio AS (
     ON ee.fk_equipamento = e.pk_equipamento
 );
 
--- Selecionando todos os atributos das respectivas VIEWS.
-SELECT * FROM view_computador_envio;
-SELECT * FROM view_impressora_envio;
-SELECT * FROM view_outros_equip_envio;
+-- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento'). 
+SELECT * FROM view_equipamento_envio_detalhado;
+SELECT * FROM view_computador_enviado_nao_enviado;
+SELECT * FROM view_impressora_enviado_nao_enviado;
+SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
 CREATE TABLE log_equipamentos_descartados (
@@ -198,6 +225,12 @@ CREATE TABLE log_equipamentos_descartados (
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL
 );
+
+-- Dando apenas permissão de seleção do LOG de descarte para o papel 'aux_ti'.
+GRANT SELECT
+ON controle_equipamentos_ti.log_equipamentos_descartados
+TO aux_ti;
+FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa.
 DELIMITER &&
