@@ -1,16 +1,16 @@
 /*Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI, os
 quais são responsáveis pela manutenção e controle de envios de equipamentos relacionados à TI para as suas demais filiais. 
-O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, integrado este banco 
-MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
+O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, 
+integrado este banco MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
 Desse modo, facilita-se a inserção, listagem, atualização e deleção de dados.
-Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho que 
-atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
+Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho 
+que atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
 
 -- Criação do banco de dados 'controle_equipamentos_ti'; definindo caracteres especiais e case-sensitive padrões; utilizando o banco.
-CREATE SCHEMA controle_equipamentos_TI
+CREATE SCHEMA controle_equipamentos_ti
 DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_bin;
-USE controle_equipamentos_TI;
+USE controle_equipamentos_ti;
 
 -- Criação da tabela de equipamento, com a qual se relacionará a classe abstrata 'equipamento', em Java, ou seja, não poderá ser instanciada, servindo, desse como, como herança.
 CREATE TABLE equipamento (
@@ -84,6 +84,7 @@ CREATE TABLE envio_equipamento (
 SHOW TABLES;
 
 -- Povoamento das tabelas de equipamento. Tais atributos da tabela serão herdadas, via FOREIGN KEY, para as tabelas computador, impressora e outros_equipamentos. (Em Java iso é visto mais facilmente.)
+START TRANSACTION;
 INSERT equipamento (tipo, modelo) VALUES
 ('Microcomputador', 'Dell Optiplex 3060'),
 ('Microcomputador', 'Bematech RC-8400'),
@@ -134,6 +135,8 @@ INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) 
 (7, 3, '2024-06-14', 'Troca de nobreak queimado.'),
 (8, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
 (9, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
+-- ROLLBACK; -- Caso deseje voltar para estado anterior antes das inserções.
+COMMIT;
 
 -- Selecionando todos os atributos das respectivas tabelas.
 SELECT * FROM equipamento;
@@ -239,7 +242,6 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
-
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
