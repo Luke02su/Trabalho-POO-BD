@@ -239,6 +239,7 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
+
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
