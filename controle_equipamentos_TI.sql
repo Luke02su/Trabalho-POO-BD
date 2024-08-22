@@ -1,45 +1,14 @@
-/*Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI
-que são responsáveis pelo controle de envios de equipamentos relaionados à TI para as suas demais filiais. 
-O objetivo principal é os utilizadores desse sistema, integrado à uma linguagem de programação, ter um controle interno dos equipamentos a serem enviados, que foram nviados,
-que ainda não foram enviados.*/
+/*Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI, os
+quais são responsáveis pela manutenção e controle de envios de equipamentos relacionados à TI para as suas demais filiais. 
+O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, integrado este banco MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
+Desse modo, facilita-se a inserção, listagem, atualização e deleção de dados.
+Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho que atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
 
 -- Criação do banco de dados 'controle_equipamentos_ti'; definindo caracteres especiais e case-sensitive padrões; utilizando o banco.
 CREATE SCHEMA controle_equipamentos_TI
 DEFAULT CHARACTER SET utf8mb4
 DEFAULT COLLATE utf8mb4_bin;
 USE controle_equipamentos_TI;
-
-/*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
-não se pode selecionar mais de uma tabela a serem concedidas os privilégios, deu-se a todos e depois revogou aquelas relativas a
-a um papael de DBA. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)*/
-CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2024';
-CREATE ROLE aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.equipamento
-TO aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.computador
-TO aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.impressora
-TO aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.outros_equipamentos
-TO aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.loja
-TO aux_ti;
-GRANT INSERT, SELECT, UPDATE, DELETE 
-ON controle_equipamentos_ti.envio_equipamento
-TO aux_ti;
-GRANT aux_ti TO 'auxiliar01_ti'@'%';
-SET DEFAULT ROLE 'aux_ti' TO 'auxiliar_ti'@'%';
-FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
-
--- Mostrando os privilégios da ROLE 'aux_ti'.
-SHOW GRANTS FOR aux_ti;
--- Mostrando os priviégios do USER 'auxiliar_ti'@'%'
-SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 
 -- Criação da tabela de equipamento, com a qual se relacionará a classe abstrata 'equipamento', em Java, ou seja, não poderá ser instanciada, servindo, desse como, como herança.
 CREATE TABLE equipamento (
@@ -210,10 +179,10 @@ CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
     ON ee.fk_equipamento = e.pk_equipamento
 );
 
--- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento'). 
+-- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento'.) 
 SELECT * FROM view_equipamento_envio_detalhado;
 SELECT * FROM view_computador_enviado_nao_enviado;
-SELECT * FROM view_impressora_enviado_nao_enviado;
+SELECT * FROM view_impressora_enviada_nao_enviada;
 SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
@@ -226,11 +195,54 @@ CREATE TABLE log_equipamentos_descartados (
 	data DATE NOT NULL
 );
 
--- Dando apenas permissão de seleção do LOG de descarte para o papel 'aux_ti'.
+/*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
+não se pode selecionar mais de uma tabela a serem concedidas os privilégios, deu-se a todos e depois revogou aquelas relativas a
+a um papael de DBA. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)*/
+CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2000';
+CREATE ROLE aux_ti;
+
+GRANT aux_ti TO 'auxiliar01_ti'@'%';
+SET DEFAULT ROLE 'aux_ti' TO 'auxiliar_ti'@'%';
+
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.equipamento
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.computador
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.impressora
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.outros_equipamentos
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.loja
+TO aux_ti;
+GRANT INSERT, SELECT, UPDATE, DELETE 
+ON controle_equipamentos_ti.envio_equipamento
+TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.log_equipamentos_descartados
 TO aux_ti;
+GRANT SELECT
+ON controle_equipamentos_ti.view_equipamento_envio_detalhado
+TO aux_ti;
+GRANT SELECT
+ON controle_equipamentos_ti.view_computador_enviado_nao_enviado
+TO aux_ti;
+GRANT SELECT
+ON controle_equipamentos_ti.view_impressora_enviada_nao_enviada
+TO aux_ti;
+GRANT SELECT
+ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
+TO aux_ti;
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
+
+-- Mostrando os privilégios da ROLE 'aux_ti'.
+SHOW GRANTS FOR aux_ti;
+-- Mostrando os priviégios do USER 'auxiliar_ti'@'%'
+SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 
 -- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa.
 DELIMITER &&
