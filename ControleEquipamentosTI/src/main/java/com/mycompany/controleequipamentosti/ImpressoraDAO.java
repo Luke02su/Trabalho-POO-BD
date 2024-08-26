@@ -7,40 +7,41 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImpressoraDAO {
+public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
     
-// A conexão com o banco de dados
+    // A conexão com o banco de dados
     private Connection connection; // Campo para armazenar a conexão com o banco de dados
     
+    // Construtor da classe ImpressoraDAO
     public ImpressoraDAO() {
         // Inicializa a conexão com o banco de dados usando a ConnectionFactory
         this.connection = new ConnectionFactory().getConnection();
     }
 
-    // Construtor da classe ContatoDAO
+    // Método para adicionar uma nova impressora ao banco de dados
     public void adicionar(Impressora impressora) {
         String sql1 = "INSERT INTO equipamento (tipo, modelo) VALUES (?, ?)";
         String sql2 = "INSERT INTO impressora (fk_equipamento, revisao) VALUES (?, ?)";
 
         try {
-            // Start the transaction
+            // Inicia a transação
             connection.setAutoCommit(false);
 
-            // Insert into equipamento
+            // Insere dados na tabela equipamento
             PreparedStatement stmt1 = connection.prepareStatement(sql1, PreparedStatement.RETURN_GENERATED_KEYS);
             stmt1.setString(1, impressora.getTipo());
             stmt1.setString(2, impressora.getModelo());
             stmt1.executeUpdate();
 
-            // Retrieve the generated primary key for equipamento
+            // Recupera a chave primária gerada para equipamento
             ResultSet generatedKeys = stmt1.getGeneratedKeys();
             if (generatedKeys.next()) {
                 int equipamentoId = generatedKeys.getInt(1);
 
-                // Set the primary key in the impressora object
+                // Define a chave primária no objeto impressora
                 impressora.setPk_equipamento(equipamentoId);
 
-                // Insert into impressora using the generated key
+                // Insere dados na tabela impressora usando a chave gerada
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setInt(1, impressora.getPk_equipamento());
                 stmt2.setString(2, impressora.getRevisao());
@@ -49,33 +50,33 @@ public class ImpressoraDAO {
                 stmt2.close();
             }
 
-            // Commit the transaction
+            // Confirma a transação
             connection.commit();
-            System.out.println("Impressora adicionada com sucesso!"); // Success message
+            System.out.println("Impressora adicionada com sucesso!"); // Mensagem de sucesso
             stmt1.close();
         } catch (SQLException e) {
             try {
-                connection.rollback(); // Rollback in case of error
+                connection.rollback(); // Reverte a transação em caso de erro
             } catch (SQLException rollbackEx) {
                 throw new RuntimeException("Erro ao fazer rollback!", rollbackEx);
             }
             throw new RuntimeException("Erro ao adicionar impressora!", e);
         } finally {
             try {
-                connection.setAutoCommit(true); // Reset auto-commit to true
+                connection.setAutoCommit(true); // Restaura o modo de commit automático
             } catch (SQLException ex) {
                 throw new RuntimeException("Erro ao redefinir auto-commit!", ex);
             }
         }
     }
 
-
+    // Método para obter a lista de impressoras do banco de dados
     public List<Impressora> getLista() {
         try {
-            // Cria uma lista para armazenar os contatos recuperados do banco de dados
-            List<Impressora> impressoras = new ArrayList<Impressora>();
+            // Cria uma lista para armazenar as impressoras recuperadas do banco de dados
+            List<Impressora> impressoras = new ArrayList<>();
 
-            // Comando SQL para selecionar todos os registros da tabela contatos
+            // Comando SQL para selecionar todos os registros da tabela impressora e equipamento
             PreparedStatement stmt = this.connection.prepareStatement("SELECT * FROM impressora INNER JOIN equipamento ON pk_equipamento = fk_equipamento");
             
             // Executa a consulta e obtém o resultado
@@ -83,74 +84,76 @@ public class ImpressoraDAO {
 
             // Itera sobre cada registro retornado pelo ResultSet
             while (rs.next()) {
-                // Cria um novo objeto Contato e define seus atributos com base nos dados do banco de dados
+                // Cria um novo objeto Impressora e define seus atributos com base nos dados do banco de dados
                 Impressora impressora = new Impressora();
                 impressora.setPk_equipamento(rs.getInt("Pk_equipamento"));
                 impressora.setTipo(rs.getString("tipo"));
                 impressora.setModelo(rs.getString("modelo"));
-                impressora.setPk_impressora(rs.getInt("pk_impressora")); // ID do contato
+                impressora.setPk_impressora(rs.getInt("pk_impressora")); // ID da impressora
                 impressora.setRevisao(rs.getString("revisao"));
 
-                // Adiciona o contato à lista de contatos
+                // Adiciona a impressora à lista de impressoras
                 impressoras.add(impressora);
             }
             rs.close(); // Fecha o ResultSet
             stmt.close(); // Fecha o PreparedStatement
-            return impressoras; // Retorna a lista de contatos
+            return impressoras; // Retorna a lista de impressoras
         } catch (SQLException e) {
             // Lança uma exceção em caso de erro na execução do SQL
             throw new RuntimeException(e);
         }
     }
     
+    // Método para listar todas as impressoras
     public void listar() {
-        System.out.println("------------ LISTAS COMPLETAS DE IMPRESSORAS------------");
-        // Obtém a lista de contatos do banco de dados
-        List<Impressora> impressora = this.getLista();
+        System.out.println("------------ LISTAS COMPLETAS DE IMPRESSORAS ------------");
+        // Obtém a lista de impressoras do banco de dados
+        List<Impressora> impressoras = this.getLista();
         
-        // Itera sobre cada contato e imprime seus detalhes
-        for (Impressora i : impressora) {
-            System.out.println("ID de equipamento: " + i.getPk_equipamento()); // Imprime o nome do contato
-            System.out.println("ID de impressora " + i.getPk_impressora()); // Imprime o email do contato
+        // Itera sobre cada impressora e imprime seus detalhes
+        for (Impressora i : impressoras) {
+            System.out.println("ID de equipamento: " + i.getPk_equipamento());
+            System.out.println("ID de impressora: " + i.getPk_impressora());
             System.out.println("Tipo: " + i.getTipo());
             System.out.println("Modelo: " + i.getModelo());
-            System.out.println("Revisada? " + i.getRevisao());
+            System.out.println("Revisão: " + i.getRevisao());
             System.out.println("----------------------------------");
         }
     }
     
-        public void listarID(int id) {
-        System.out.println("------------ LISTA COMPLETA DE IMPRESSORA " + id + "------------");
-        // Obtém a lista de contatos do banco de dados
-        List<Impressora> impressora = this.getLista();
+    // Método para listar uma impressora específica pelo ID
+    public void listarID(int id) {
+        System.out.println("------------ LISTA COMPLETA DE IMPRESSORA " + id + " ------------");
+        // Obtém a lista de impressoras do banco de dados
+        List<Impressora> impressoras = this.getLista();
         
-        // Itera sobre cada contato e imprime seus detalhes
-        
-        boolean inserido = false;
+        // Itera sobre cada impressora e imprime seus detalhes
+        boolean encontrado = false;
        
-        for (Impressora i : impressora) {
+        for (Impressora i : impressoras) {
             if(id == i.getPk_impressora()) {
-                System.out.println("ID de equipamento: " + i.getPk_equipamento()); // Imprime o nome do contato
-                System.out.println("ID de computador: " + i.getPk_impressora()); // Imprime o email do contato
+                System.out.println("ID de equipamento: " + i.getPk_equipamento());
+                System.out.println("ID de impressora: " + i.getPk_impressora());
                 System.out.println("Tipo: " + i.getTipo());
-                System.out.println("Modelo: " + i.getModelo()); // Imprime o endereço do cont
-                System.out.println("Revisada? " + i.getRevisao()); 
+                System.out.println("Modelo: " + i.getModelo());
+                System.out.println("Revisão: " + i.getRevisao()); 
                 System.out.println("----------------------------------");
-                inserido = true;
+                encontrado = true;
                 break;
             } 
         }
-        if (inserido == false) {
-            System.out.println("Sinto muito! Este computador não existe.");
+        if (!encontrado) {
+            System.out.println("Sinto muito! Esta impressora não existe.");
         }
     }
-        
-        public void atualizar(Impressora impressora, int id) {
+    
+    // Método para atualizar os detalhes de uma impressora
+    public void atualizar(Impressora impressora, int id) {
         String sql1 = "UPDATE equipamento SET tipo = ?, modelo = ? WHERE pk_equipamento = ?";
         String sql2 = "UPDATE impressora SET revisao = ? WHERE pk_impressora = ?";
 
         try {
-            // Primeiro, selecione o pk_equipamento associado ao id do computador
+            // Primeiro, seleciona o fk_equipamento associado ao id da impressora
             PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -160,7 +163,7 @@ public class ImpressoraDAO {
 
                 connection.setAutoCommit(false);
 
-                // Atualizando os dados de equipamento
+                // Atualiza os dados na tabela equipamento
                 PreparedStatement stmt1 = connection.prepareStatement(sql1);
                 stmt1.setString(1, impressora.getTipo());
                 stmt1.setString(2, impressora.getModelo());
@@ -169,7 +172,7 @@ public class ImpressoraDAO {
                 int rows1 = stmt1.executeUpdate();
                 System.out.println("Linhas afetadas em equipamento: " + rows1);
 
-                // Atualizando os dados de computador
+                // Atualiza os dados na tabela impressora
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setString(1, impressora.getRevisao());
                 stmt2.setInt(2, id);
@@ -189,7 +192,7 @@ public class ImpressoraDAO {
 
         } catch (SQLException e) {
             try {
-                connection.rollback();
+                connection.rollback(); // Reverte a transação em caso de erro
             } catch (SQLException rollbackEx) {
                 rollbackEx.printStackTrace();
             }
@@ -197,13 +200,14 @@ public class ImpressoraDAO {
             throw new RuntimeException(e);
         } finally {
             try {
-                connection.setAutoCommit(true);
+                connection.setAutoCommit(true); // Restaura o modo de commit automático
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
-        
+    
+    // Método para deletar uma impressora e seu equipamento associado
     public void deletar(int id) {
         PreparedStatement stmt1 = null;
         PreparedStatement stmt2 = null;
@@ -229,10 +233,10 @@ public class ImpressoraDAO {
                 // Define o parâmetro para a exclusão do equipamento
                 stmt3.setInt(1, pk_equipamento);
 
-                // Começa a transação
+                // Inicia a transação
                 connection.setAutoCommit(false);
 
-                // Executa a exclusão do computador
+                // Executa a exclusão da impressora
                 int rows1 = stmt1.executeUpdate();
                 System.out.println("Linhas afetadas em impressora: " + rows1);
 

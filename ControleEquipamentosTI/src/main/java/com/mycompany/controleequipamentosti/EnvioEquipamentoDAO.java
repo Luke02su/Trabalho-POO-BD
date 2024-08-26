@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnvioEquipamentoDAO implements CrudDAO<EnvioEquipamento> {
+public class EnvioEquipamentoDAO {
     // A conexão com o banco de dados
     private Connection connection; // Campo para armazenar a conexão com o banco de dados
     
@@ -114,8 +114,8 @@ public class EnvioEquipamentoDAO implements CrudDAO<EnvioEquipamento> {
     }
         
     
-    public void listarID(int id) {
-        System.out.println("------------ LISTA COMPLETA DE ENVIO DE EQUIPAMENTO " + id + "------------");
+    public void listarID(int idEquipamento, int idLoja) {
+        System.out.println("------------ LISTA COMPLETA DE ENVIO DE EQUIPAMENTO " + idEquipamento + " "+ idLoja + "------------");
         // Obtém a lista de contatos do banco de dados
         List<EnvioEquipamento> envio = this.getLista();
         
@@ -124,7 +124,7 @@ public class EnvioEquipamentoDAO implements CrudDAO<EnvioEquipamento> {
         boolean inserido = false;
        
         for (EnvioEquipamento eq : envio) {
-            if(id == eq.getPk_envio()) {
+            if(idEquipamento == eq.getEquipamento().getPk_equipamento() && idLoja == eq.getLoja().getPk_loja()) {
                 System.out.println("ID do equipamento: " + eq.getEquipamento().getPk_equipamento()); // Imprime o email do contato
                 System.out.println("Tipo: " + eq.getEquipamento().getTipo());
                 System.out.println("Modelo: " + eq.getEquipamento().getModelo());
@@ -193,47 +193,30 @@ public class EnvioEquipamentoDAO implements CrudDAO<EnvioEquipamento> {
         }
     }
     
-        public void deletar(int id) {
-        PreparedStatement stmt1 = null;
-        PreparedStatement stmt2 = null;
-        PreparedStatement stmt3 = null;
-        ResultSet rs = null;
+    public void deletar(int idEquipamento, int idLoja) {
+            
+        PreparedStatement stmt = null;
 
         try {
             // Inicializa as instruções SQL
-            stmt1 = connection.prepareStatement("DELETE FROM computador WHERE pk_computador = ?");
-            stmt2 = connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
-            stmt3 = connection.prepareStatement("DELETE FROM equipamento WHERE pk_equipamento = ?");
+            stmt = connection.prepareStatement("DELETE FROM envio_equipamento WHERE fk_equipamento = ? AND fk_loja = ?");
 
             // Define o valor do parâmetro ID na instrução SQL
-            stmt1.setInt(1, id);
-            stmt2.setInt(1, id);
+            stmt.setInt(1, idEquipamento);
+            stmt.setInt(2, idLoja);
 
-            // Executa a consulta para obter o fk_equipamento
-            rs = stmt2.executeQuery();
+            // Começa a transação
+            connection.setAutoCommit(false);
 
-            if (rs.next()) { // Verifica se há um resultado
-                int pk_equipamento = rs.getInt("fk_equipamento");
-
-                // Define o parâmetro para a exclusão do equipamento
-                stmt3.setInt(1, pk_equipamento);
-
-                // Começa a transação
-                connection.setAutoCommit(false);
-
-                // Executa a exclusão do computador
-                int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows1);
-
-                // Executa a exclusão do equipamento
-                int rows2 = stmt3.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows2);
-
-                // Confirma a transação
+            // Executa a exclusão do computador
+            int rows1 = stmt.executeUpdate();
+            if (rows1 > 0) {
+                System.out.println("Linhas afetadas em envio de equipamento: " + rows1);
                 connection.commit();
             } else {
-                System.out.println("Nenhum equipamento encontrado para o computador com ID: " + id);
+                System.out.println("Nenhuma envio encontrado com ID de equipamento " + idEquipamento + "e ID de loja " + idLoja);
             }
+                
             System.out.println("");
         } catch (SQLException e) {
             try {
@@ -248,10 +231,7 @@ public class EnvioEquipamentoDAO implements CrudDAO<EnvioEquipamento> {
         } finally {
             // Libera os recursos
             try {
-                if (rs != null) rs.close();
-                if (stmt1 != null) stmt1.close();
-                if (stmt2 != null) stmt2.close();
-                if (stmt3 != null) stmt3.close();
+                if (stmt != null) stmt.close();
                 if (connection != null) connection.setAutoCommit(true); // Restaura o modo de commit automático
             } catch (SQLException e) {
                 e.printStackTrace();

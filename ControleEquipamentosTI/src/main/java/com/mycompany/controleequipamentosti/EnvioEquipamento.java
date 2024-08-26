@@ -1,19 +1,10 @@
 package com.mycompany.controleequipamentosti;
 
 public class EnvioEquipamento {
-    private int pk_envio;
     private Equipamento equipamento;
     private Loja loja;
     private String data_envio;
     private String observacao;
-
-    public int getPk_envio() {
-        return pk_envio;
-    }
-
-    public void setPk_envio(int pk_envio) {
-        this.pk_envio = pk_envio;
-    }
     
     public Equipamento getEquipamento() {
         return equipamento;
