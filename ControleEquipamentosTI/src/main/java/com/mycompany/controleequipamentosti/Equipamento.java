@@ -6,10 +6,6 @@ public abstract class Equipamento {
     private String categoria;
     private String tipo;
     private String modelo;
-    
-    public Equipamento() {
-        
-    }
 
     public Equipamento(int pk_equipamento, String tipo, String modelo) {
         this.pk_equipamento = pk_equipamento;
