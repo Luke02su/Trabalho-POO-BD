@@ -200,7 +200,18 @@ CREATE TABLE log_equipamentos_descartados (
     tipo VARCHAR (30) NOT NULL,
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
-	data DATE NOT NULL
+	data DATE NOT NULL,
+    usuario VARCHAR(20) NOT NULL
+);
+
+-- Criando tabela de LOG para envios de equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_envio'.
+CREATE TABLE log_envios_equipamentos_descartados (
+	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
+    fk_equipamento INT NOT NULL,
+    fk_loja INT NOT NULL,
+    motivo VARCHAR(30) NOT NULL,
+	data DATE NOT NULL,
+    usuario VARCHAR(20) NOT NULL
 );
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
@@ -255,15 +266,26 @@ SHOW GRANTS FOR aux_ti;
 -- Mostrando os priviégios do USER 'auxiliar_ti'@'%'
 SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 
--- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa.
+-- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa. Mesma coisa ocorre na TRIGGER log_equipamentos_descartados', inserindo na TABLE 'log_envios_equipamentos_descartados'.
 DELIMITER &&
 CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
 ON equipamento
 FOR EACH ROW
 BEGIN
-	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, data) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW());
+	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, data, usuario) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW(), USER());
 END&&
 DELIMITER ;
+
+DELIMITER &&
+CREATE TRIGGER trg_descarte_envio BEFORE DELETE
+ON envio_equipamento
+FOR EACH ROW
+BEGIN
+	INSERT INTO log_envios_equipamentos_descartados (pk_descarte, fk_equipamento, fk_loja, motivo, data, usuario) VALUES (NULL, OLD.fk_equipamento, OLD.fk_loja, 'Equipamento devolvido', NOW(), USER());
+END&&
+DELIMITER ;
+
+drop trigger trg_descarte_envio;
 
 -- Criação de PROCEDURE a fim de automatizar o processo, via banco, de DELETE de um determinado equipamento. (Ideal fazer pelo Java.)
 DELIMITER %%
@@ -277,15 +299,18 @@ DELIMITER ;
 DELIMITER %%
 CREATE PROCEDURE proc_deletar_envio_equipamento (IN id_equipamento INT, IN id_loja INT)
 BEGIN
-	DELETE FROM envio_equipamento WHERE fk_equipamento = id_envio AND fk_loja = id_loja;
+	DELETE FROM envio_equipamento WHERE fk_equipamento = id_equipamento AND fk_loja = id_loja;
 END%%
 DELIMITER ;
 
+drop procedure proc_deletar_envio_equipamento;
+
 -- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
 CALL proc_deletar_equipamento (9);
-CALL proc_deletar_envio_equipamento(2, 2);
+CALL proc_deletar_envio_equipamento(1, 1);
 
--- Selecionando os atributos da tabela 'log_equipamentos_descartados'.
+-- Selecionando os atributos da tabela 'log_equipamentos_descartados' e 'log_envios_equipamentos_descartados'.
 SELECT * FROM log_equipamentos_descartados;
+SELECT * FROM log_envios_equipamentos_descartados;
 
 -- DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
