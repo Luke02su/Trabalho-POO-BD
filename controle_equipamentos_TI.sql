@@ -14,7 +14,7 @@ USE controle_equipamentos_ti;
 
 -- Criação da tabela de equipamento, com a qual se relacionará a classe abstrata 'equipamento', em Java, ou seja, não poderá ser instanciada, servindo, desse como, como herança.
 CREATE TABLE equipamento (
-	 pk_equipamento INT AUTO_INCREMENT PRIMARY KEY, 
+	 pk_equipamento INT AUTO_INCREMENT PRIMARY KEY,
 	 tipo VARCHAR(30) NOT NULL,
      modelo VARCHAR(30) NOT NULL
 ) ENGINE=InnoDB;
@@ -61,13 +61,13 @@ CREATE TABLE outros_equipamentos (
 CREATE TABLE loja (
 	pk_loja INT AUTO_INCREMENT PRIMARY KEY,
     cnpj VARCHAR(18) UNIQUE NOT NULL,
+    gerente VARCHAR(30) NOT NULL,
     cidade VARCHAR(20) NOT NULL,
     telefone VARCHAR(20) NOT NULL
 ) ENGINE=InnoDB;
 
 -- Criação da tabela de computador, sobre a qual se relacionará a classe 'EnvioEquipamento', em Java, instanciada.
 CREATE TABLE envio_equipamento (
-	pk_envio INT AUTO_INCREMENT PRIMARY KEY,
 	fk_equipamento INT NOT NULL,
     fk_loja INT NOT NULL,
     data_envio DATE NOT NULL,
@@ -77,7 +77,8 @@ CREATE TABLE envio_equipamento (
 	INDEX idx_fk_loja (fk_loja),
     
 	CONSTRAINT fk_equipamento_envio FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_loja_envio FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_loja_envio FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT pk_envio PRIMARY KEY (fk_equipamento, fk_loja)
 ) ENGINE=InnoDB;
 
 -- Mostrando as tabelas do banco controle_equipamentos_TI.
@@ -117,10 +118,10 @@ INSERT INTO outros_equipamentos (fk_equipamento, pk_outros_equipamentos, descric
 (9, NULL, '17 polegadas');
 
 -- Povoamento da tabela de loja.
-INSERT INTO loja (pk_loja, cnpj, cidade, telefone) VALUES 
-(NULL, '22.222.998/0923-40', 'Patrocínio', '(34) 9 98222-343'),
-(NULL, '22.222.998/0922-10', 'Patos de Minas', '(34) 9 9912-7876'),
-(NULL, '22.222.998/083-98', 'Paracatu', '(34) 9 97192-931');
+INSERT INTO loja (pk_loja, cnpj, gerente, cidade, telefone) VALUES 
+(NULL, '22.222.998/0923-40', 'Marcelo', 'Patrocínio', '(34) 9 98222-343'),
+(NULL, '22.222.998/0922-10', 'José', 'Patos de Minas', '(34) 9 9912-7876'),
+(NULL, '22.222.998/083-98', 'Kely', 'Paracatu', '(34) 9 97192-931');
 
 -- Povoamento da tabela envio_equipamento, correlacionando com equipamento e loja de forma agregativa. (Em Java isso é visto como associação de agregação.)
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
@@ -148,10 +149,12 @@ SELECT * FROM envio_equipamento;
 
 -- Criando uma VIEW detalhada, em que há os atributios modelo e tipo advindos de 'equipamento', para o envio de equipamento, que será usada para listar os dados de 'Outros_EquipamentosDAO', no Java.
 CREATE VIEW view_equipamento_envio_detalhado AS (
-	SELECT eq.pk_envio, eq.fk_equipamento, q.modelo, q.tipo, eq.fk_loja, DATE_FORMAT(eq.data_envio, "%d/%m/%Y") AS data_envio,  eq.observacao
+	SELECT eq.fk_equipamento, q.tipo, q.modelo, eq.fk_loja, l.gerente, DATE_FORMAT(eq.data_envio, "%d/%m/%Y") AS data_envio,  eq.observacao
     FROM envio_equipamento eq
     INNER JOIN equipamento q
     ON eq.fk_equipamento = q.pk_equipamento
+    INNER JOIN loja l
+    ON eq.fk_loja = l.pk_loja
 );
 
 -- Criando uma VIEW para o envio de computador, na qual pode-se ver os que foram e os que não foram enviados.
@@ -242,6 +245,9 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
+GRANT EXECUTE
+ON PROCEDURE controle_equipamentos_ti.proc_deletar_equipamento
+TO aux_ti;
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
@@ -267,8 +273,17 @@ BEGIN
 END%%
 DELIMITER ;
 
--- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento'.
+-- Criação de PROCEDURE a fim de automatizar o processo, via banco, de DELETE de um determinado envio de equipamento. (Ideal fazer pelo Java.)
+DELIMITER %%
+CREATE PROCEDURE proc_deletar_envio_equipamento (IN id_equipamento INT, IN id_loja INT)
+BEGIN
+	DELETE FROM envio_equipamento WHERE fk_equipamento = id_envio AND fk_loja = id_loja;
+END%%
+DELIMITER ;
+
+-- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
 CALL proc_deletar_equipamento (9);
+CALL proc_deletar_envio_equipamento(2, 2);
 
 -- Selecionando os atributos da tabela 'log_equipamentos_descartados'.
 SELECT * FROM log_equipamentos_descartados;
