@@ -165,6 +165,7 @@ CREATE VIEW view_computador_enviado_nao_enviado AS (
     ON e.pk_equipamento = c.fk_equipamento
     LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
+    WHERE e.pk_equipamento IS NULL
 );
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver os que foram e os que não foram enviadas.
@@ -201,18 +202,17 @@ CREATE TABLE log_equipamentos_descartados (
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
-    usuario VARCHAR(20) NOT NULL
-);
+    usuario VARCHAR(25) NOT NULL
+)ENGINE=InnoDB;
 
--- Criando tabela de LOG para envios de equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_envio'.
 CREATE TABLE log_envios_equipamentos_descartados (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
     fk_equipamento INT NOT NULL,
     fk_loja INT NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
-    usuario VARCHAR(20) NOT NULL
-);
+    usuario VARCHAR(25) NOT NULL
+)ENGINE=InnoDB;
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
 não se pode selecionar mais de uma tabela a serem concedidas os privilégios, deu-se a todos e depois revogou aquelas relativas a
@@ -221,8 +221,11 @@ CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2000';
 CREATE ROLE aux_ti;
 
 GRANT aux_ti TO 'auxiliar01_ti'@'%';
-SET DEFAULT ROLE 'aux_ti' TO 'auxiliar_ti'@'%';
+SET DEFAULT ROLE aux_ti TO 'auxiliar01_ti'@'%';
 
+GRANT USAGE
+ON contole_equipamentos_ti.*
+TO aux_ti;
 GRANT INSERT, SELECT, UPDATE, DELETE 
 ON controle_equipamentos_ti.equipamento
 TO aux_ti;
@@ -245,6 +248,9 @@ GRANT SELECT
 ON controle_equipamentos_ti.log_equipamentos_descartados
 TO aux_ti;
 GRANT SELECT
+ON controle_equipamentos_ti.log_envios_equipamentos_descartados
+TO aux_ti;
+GRANT SELECT
 ON controle_equipamentos_ti.view_equipamento_envio_detalhado
 TO aux_ti;
 GRANT SELECT
@@ -256,9 +262,16 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
+GRANT TRIGGER
+ON controle_equipamentos_ti.*
+TO aux_ti;
 GRANT EXECUTE
 ON PROCEDURE controle_equipamentos_ti.proc_deletar_equipamento
 TO aux_ti;
+GRANT EXECUTE
+ON PROCEDURE controle_equipamentos_ti.proc_deletar_envio_equipamento 
+TO aux_ti;
+GRANT USAGE ON *.* TO auxiliar01_ti;
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
@@ -285,8 +298,6 @@ BEGIN
 END&&
 DELIMITER ;
 
-drop trigger trg_descarte_envio;
-
 -- Criação de PROCEDURE a fim de automatizar o processo, via banco, de DELETE de um determinado equipamento. (Ideal fazer pelo Java.)
 DELIMITER %%
 CREATE PROCEDURE proc_deletar_equipamento (IN id_equipamento INT)
@@ -303,10 +314,8 @@ BEGIN
 END%%
 DELIMITER ;
 
-drop procedure proc_deletar_envio_equipamento;
-
 -- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
-CALL proc_deletar_equipamento (9);
+CALL proc_deletar_equipamento (7);
 CALL proc_deletar_envio_equipamento(1, 1);
 
 -- Selecionando os atributos da tabela 'log_equipamentos_descartados' e 'log_envios_equipamentos_descartados'.
