@@ -151,6 +151,8 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
     public void atualizar(Outros_Equipamentos outros_equip, int id) {
         String sql1 = "UPDATE equipamento SET tipo = ?, modelo = ? WHERE pk_equipamento = ?";
         String sql2 = "UPDATE outros_equipamentos SET descricao = ? WHERE pk_outros_equipamentos = ?";
+        int cont = 0;
+        int cont2 = 0;
 
         try {
             // Primeiro, seleciona o fk_equipamento associado ao id do outro equipamento
@@ -166,19 +168,22 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
                 // Atualiza os dados do equipamento
                 PreparedStatement stmt1 = connection.prepareStatement(sql1);
                 stmt1.setString(1, outros_equip.getTipo());
+                cont++;
                 stmt1.setString(2, outros_equip.getModelo());
+                cont++;
                 stmt1.setInt(3, fk_equipamento);
 
                 int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows1);
+                System.out.println("Linhas afetadas em equipamento: " + cont);
 
                 // Atualiza os dados do outro equipamento
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setString(1, outros_equip.getDescricao());
+                cont2++;
                 stmt2.setInt(2, id);
 
-                int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em outros equipamentos: " + rows2 + "\n");
+                stmt2.executeUpdate();
+                System.out.println("Colunas afetadas em outros equipamentos: " + cont2 + "\n");
 
                 connection.commit();
                 
@@ -207,6 +212,110 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
             }
         }
     }
+    
+   public void atualizarUmAtributo(Outros_Equipamentos outros_equip, int id) {
+            String sql1 = "UPDATE equipamento SET";
+            String sql2 = "UPDATE outros_euipamentos SET";
+            boolean updateEquipamento = false;
+            boolean updateOutro = false;
+            int cont = 0;
+            int cont2 = 0;
+
+    try {
+        
+        // Primeiro, selecione o pk_equipamento associado ao id do computador
+        PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            int pk_equipamento = rs.getInt("fk_equipamento");
+            connection.setAutoCommit(false);
+
+            // Construir a consulta SQL para atualizar o equipamento
+            if (outros_equip.getTipo() != null) {
+                sql1 += " tipo = ?";
+                updateEquipamento = true;
+                cont++;
+            }
+            if (outros_equip.getModelo() != null) {
+                sql1 += " modelo = ?";
+                updateEquipamento = true;
+                cont++;
+            }
+            if (updateEquipamento) {
+                sql1 += " WHERE pk_equipamento = ?";
+            }
+
+            // Construir a consulta SQL para atualizar o computador
+            if (outros_equip.getDescricao() != null) {
+                sql2 += " revisao = ?";
+                updateOutro= true;
+                if (updateEquipamento == true) {
+                    cont2++;
+                }
+            }
+            
+            if (updateOutro) {
+                sql2 += " WHERE pk_impressora = ?";
+            }
+
+            // Atualizando os dados do equipamento, se necessário
+            if (updateEquipamento) {
+                PreparedStatement stmt1 = connection.prepareStatement(sql1);
+                int index = 1;
+                if (outros_equip.getTipo() != null) {
+                    stmt1.setString(index++, outros_equip.getTipo());
+                }
+                if (outros_equip.getModelo() != null) {
+                    stmt1.setString(index++, outros_equip.getModelo());
+                }
+                stmt1.setInt(index++, pk_equipamento);
+                
+                stmt1.executeUpdate();
+                System.out.println("Colunas afetadas em equipamento " + id + ": " + cont);
+                stmt1.close();
+            }
+
+            // Atualizando os dados do computador, se necessário
+            if (updateOutro) {
+                PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                int index = 1;
+                if (outros_equip.getDescricao() != null) {
+                    stmt2.setString(index++, outros_equip.getDescricao());
+                }
+                stmt2.setInt(index++, id);
+                
+                stmt2.executeUpdate();
+                System.out.println("Colunas afetadas em equipamento genérico " + id + ": " + cont2);
+                stmt2.close();
+            }
+
+            connection.commit();
+        } else {
+            System.out.println("\nErro! Nenhuma impressora encontrada com o ID: " + id);
+            System.out.println("");
+        }
+
+        rs.close();
+        stmt.close();
+
+    } catch (SQLException e) {
+        try {
+            connection.rollback(); // Reverte a transação em caso de erro
+        } catch (SQLException rollbackEx) {
+            rollbackEx.printStackTrace();
+        }
+        e.printStackTrace();
+        throw new RuntimeException(e);
+    } finally {
+        try {
+            connection.setAutoCommit(true); // Restaura o modo de commit automático
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
         
     // Deleta um equipamento e o seu correspondente na tabela de equipamentos
     public void deletar(int id) {

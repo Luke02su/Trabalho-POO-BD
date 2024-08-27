@@ -175,11 +175,12 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
     }
     
         // Método para atualizar um computador e o seu equipamento associado
-public void atualizarUm(Computador computador, int id) {
-    String sql1 = "UPDATE equipamento SET";
-    String sql2 = "UPDATE computador SET";
-    boolean updateEquipamento = false;
-    boolean updateComputador = false;
+    @Override
+    public void atualizarUmAtributo(Computador computador, int id) {
+            String sql1 = "UPDATE equipamento SET";
+            String sql2 = "UPDATE computador SET";
+            boolean updateEquipamento = false;
+            boolean updateComputador = false;
 
     try {
         // Primeiro, selecione o pk_equipamento associado ao id do computador
@@ -193,45 +194,43 @@ public void atualizarUm(Computador computador, int id) {
 
             // Construir a consulta SQL para atualizar o equipamento
             if (computador.getTipo() != null) {
-                sql1 += " tipo = ?,";
+                sql1 += " tipo = ?";
                 updateEquipamento = true;
             }
             if (computador.getModelo() != null) {
-                sql1 += " modelo = ?,";
+                sql1 += " modelo = ?";
                 updateEquipamento = true;
             }
             if (updateEquipamento) {
-                sql1 = sql1.substring(0, sql1.length() - 1); // Remove a última vírgula
                 sql1 += " WHERE pk_equipamento = ?";
             }
 
             // Construir a consulta SQL para atualizar o computador
             if (computador.getProcessador() != null) {
-                sql2 += " processador = ?,";
+                sql2 += " processador = ?";
                 updateComputador = true;
             }
             if (computador.getMemoria() != null) {
-                sql2 += " memoria = ?,";
+                sql2 += " memoria = ?";
                 updateComputador = true;
             }
             if (computador.getWindows() != null) {
-                sql2 += " windows = ?,";
+                sql2 += " windows = ?";
                 updateComputador = true;
             }
             if (computador.getArmazenamento() != null) {
-                sql2 += " armazenamento = ?,";
+                sql2 += " armazenamento = ?";
                 updateComputador = true;
             }
             if (computador.getFormatacao() != null) {
-                sql2 += " formatacao = ?,";
+                sql2 += " formatacao = ?";
                 updateComputador = true;
             }
             if (computador.getManutencao() != null) {
-                sql2 += " manutencao = ?,";
+                sql2 += " manutencao = ?";
                 updateComputador = true;
             }
             if (updateComputador) {
-                sql2 = sql2.substring(0, sql2.length() - 1); // Remove a última vírgula
                 sql2 += " WHERE pk_computador = ?";
             }
 
@@ -245,7 +244,8 @@ public void atualizarUm(Computador computador, int id) {
                 if (computador.getModelo() != null) {
                     stmt1.setString(index++, computador.getModelo());
                 }
-                stmt1.setInt(index, pk_equipamento);
+                stmt1.setInt(index++, pk_equipamento);
+                
                 int rows1 = stmt1.executeUpdate();
                 System.out.println("Linhas afetadas em equipamento: " + rows1);
                 stmt1.close();
@@ -273,7 +273,8 @@ public void atualizarUm(Computador computador, int id) {
                 if (computador.getManutencao() != null) {
                     stmt2.setString(index++, computador.getManutencao());
                 }
-                stmt2.setInt(index, id);
+                stmt2.setInt(index++, id);
+                
                 int rows2 = stmt2.executeUpdate();
                 System.out.println("Linhas afetadas em computador: " + rows2);
                 stmt2.close();
@@ -282,6 +283,7 @@ public void atualizarUm(Computador computador, int id) {
             connection.commit();
         } else {
             System.out.println("Nenhum computador encontrado com o ID: " + id);
+            System.out.println("");
         }
 
         rs.close();
@@ -303,7 +305,6 @@ public void atualizarUm(Computador computador, int id) {
         }
     }
 }
-
     
     // Método para atualizar um computador e o seu equipamento associado
     public void atualizar(Computador computador, int id) {

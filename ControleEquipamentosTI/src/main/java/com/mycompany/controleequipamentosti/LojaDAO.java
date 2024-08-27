@@ -183,6 +183,10 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
             }
         }
     }
+    
+    public void atualizarUmAtributo(Loja loja, int id) {
+        
+    }
         
     // Método para deletar uma loja pelo ID
     public void deletar(int id) {

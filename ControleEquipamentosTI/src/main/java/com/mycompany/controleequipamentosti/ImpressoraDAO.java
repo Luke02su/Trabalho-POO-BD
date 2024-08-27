@@ -207,6 +207,102 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
         }
     }
     
+    public void atualizarUmAtributo(Impressora impressora, int id) {
+            String sql1 = "UPDATE equipamento SET";
+            String sql2 = "UPDATE impressora SET";
+            boolean updateEquipamento = false;
+            boolean updateImpressora = false;
+
+    try {
+        // Primeiro, selecione o pk_equipamento associado ao id do computador
+        PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            int pk_equipamento = rs.getInt("fk_equipamento");
+            connection.setAutoCommit(false);
+
+            // Construir a consulta SQL para atualizar o equipamento
+            if (impressora.getTipo() != null) {
+                sql1 += " tipo = ?";
+                updateEquipamento = true;
+            }
+            if (impressora.getModelo() != null) {
+                sql1 += " modelo = ?";
+                updateEquipamento = true;
+            }
+            if (updateEquipamento) {
+                sql1 += " WHERE pk_equipamento = ?";
+            }
+
+            // Construir a consulta SQL para atualizar o computador
+            if (impressora.getRevisao() != null) {
+                sql2 += " revisao = ?";
+                updateImpressora= true;
+            }
+            
+            if (updateImpressora) {
+                sql2 += " WHERE pk_impressora = ?";
+            }
+
+            // Atualizando os dados do equipamento, se necessário
+            if (updateEquipamento) {
+                PreparedStatement stmt1 = connection.prepareStatement(sql1);
+                int index = 1;
+                if (impressora.getTipo() != null) {
+                    stmt1.setString(index++, impressora.getTipo());
+                }
+                if (impressora.getModelo() != null) {
+                    stmt1.setString(index++, impressora.getModelo());
+                }
+                stmt1.setInt(index++, pk_equipamento);
+                
+                int rows1 = stmt1.executeUpdate();
+                System.out.println("Linhas afetadas em equipamento: " + rows1);
+                stmt1.close();
+            }
+
+            // Atualizando os dados do computador, se necessário
+            if (updateImpressora) {
+                PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                int index = 1;
+                if (impressora.getRevisao() != null) {
+                    stmt2.setString(index++, impressora.getRevisao());
+                }
+                stmt2.setInt(index++, id);
+                
+                int rows2 = stmt2.executeUpdate();
+                System.out.println("Linhas afetadas em impressora: " + rows2);
+                stmt2.close();
+            }
+
+            connection.commit();
+        } else {
+            System.out.println("\nErro! Nenhuma impressora encontrada com o ID: " + id);
+            System.out.println("");
+        }
+
+        rs.close();
+        stmt.close();
+
+    } catch (SQLException e) {
+        try {
+            connection.rollback(); // Reverte a transação em caso de erro
+        } catch (SQLException rollbackEx) {
+            rollbackEx.printStackTrace();
+        }
+        e.printStackTrace();
+        throw new RuntimeException(e);
+    } finally {
+        try {
+            connection.setAutoCommit(true); // Restaura o modo de commit automático
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+    
     // Método para deletar uma impressora e seu equipamento associado
     public void deletar(int id) {
         PreparedStatement stmt1 = null;

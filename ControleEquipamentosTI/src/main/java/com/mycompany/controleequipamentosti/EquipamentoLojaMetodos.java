@@ -16,9 +16,11 @@ public interface EquipamentoLojaMetodos<X> {
 
     // Método para listar um objeto específico pelo seu ID
     void listarID(int id);
-
+    
     // Método para atualizar um objeto no banco de dados
     void atualizar(X objeto, int id);
+    
+    void atualizarUmAtributo(X objeto, int id);
 
     // Método para deletar um objeto do banco de dados pelo seu ID
     void deletar(int id);
