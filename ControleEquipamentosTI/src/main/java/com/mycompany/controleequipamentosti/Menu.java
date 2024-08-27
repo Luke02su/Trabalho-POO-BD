@@ -1,7 +1,7 @@
 package com.mycompany.controleequipamentosti;
 import java.util.Scanner;
 
-public class Menu {
+public class Menu {  
 
     public static void main(String[] args) {
         
@@ -16,6 +16,7 @@ public class Menu {
         EnvioEquipamentoDAO daoE = new EnvioEquipamentoDAO();
         
         int opcao = 0;
+        
         
         // Laço de repetição que roda no mínimo 1 vez.
         do {
@@ -35,6 +36,7 @@ public class Menu {
             // Switch para escolher.
             switch(opcao) {
                 case 1: {
+                    do {
                     System.out.println("------ MENU do CRUD de Computador ------");
                     System.out.println("\nEscolha uma opção:\n");
                     System.out.println("1. Criar dados para um computador.");
@@ -42,12 +44,15 @@ public class Menu {
                     System.out.println("3. Ler dados de um computador.");
                     System.out.println("4. Atualizar dados de um computador.");
                     System.out.println("5. Deletar dados de um computador.");
+                    System.out.println("6. Retornar ao menu principal.");
                     
                     System.out.print("\nEscolha: ");
                     opcao = scan.nextInt();
                     System.out.println("");
                     
-                    if (opcao == 1) {
+                    switch(opcao) {
+                        case 1: {
+                        
                         System.out.println("Digite os dados do computador a serem cadastrados: ");
                         
                         Computador computador = new Computador();
@@ -59,7 +64,6 @@ public class Menu {
                         computador.setTipo(tipo);
                     
                         
-                        System.out.print("Digite o modelo: ");
                         String modelo = (scan.nextLine());
                         computador.setModelo(modelo);
                         
@@ -88,19 +92,42 @@ public class Menu {
                         computador.setManutencao(manutencao);
                         
                         daoC.adicionar(computador);
-                    } else if (opcao == 2) {
+                        break;
+                    } case 2: {
                         daoC.listar();
-                    } else if (opcao == 3) {
+                        break;
+                    } case 3: {
                         System.out.print("Digite o ID do computador a ser lido: ");
                         opcao = (scan.nextInt());
                         daoC.listarID(opcao);
-                    } else if (opcao == 4) {
-                            System.out.print("Digite o ID do computador a ser atualizado: ");
-                            int id = scan.nextInt();
-                            scan.nextLine();
+                        break;
+                    } case 4: {
+                        Computador computador = new Computador();
+                        
+                        System.out.print("Digite o ID do computador a ser atualizado: ");
+                        int id = scan.nextInt();
+                        scan.nextLine(); 
+                        
+                        System.out.println("1. Atualizar atributo tipo.");
+                        System.out.println("2. Atualizar todos atributos .");
+                        
+                        System.out.print("\nEscolha: ");
+                        opcao = (scan.nextInt());
+                        System.out.println("");
+                        
+                        switch(opcao) {
+                            case 1: {
+                                
+                                scan.nextLine();
+                                System.out.print("Digite o novo tipo de computador: ");
+                                String tipo = scan.nextLine();
+                                computador.setTipo(tipo);
+                                
+                                daoC.atualizarUm(computador, id);
+                                break;
+                            } case 2: {
                             
-                            Computador computador = new Computador();
-
+                            scan.nextLine(); 
                             System.out.print("Digite o novo tipo de computador: ");
                             String tipo = scan.nextLine();
                             computador.setTipo(tipo);
@@ -132,15 +159,26 @@ public class Menu {
                             System.out.print("Foi feita manutenção? ");
                             String manutencao = scan.nextLine();
                             computador.setManutencao(manutencao);
-                        
-                        daoC.atualizar(computador, id);
-                    } else if (opcao == 5) {
+                            
+                            daoC.atualizar(computador, id);
+                            
+                            break;
+                            }
+                        }
+                    } case 5: {
                         System.out.print("Digite o ID do computador a ser deletado: ");
                         opcao = (scan.nextInt());
                         daoC.deletar(opcao);
-                    } else {
+                    } case 6: {
+                        System.out.println("Retornando ao menu principal...");
+                        break;
+                    } default: {
                         System.out.println("Opção inválida. Escolha novamente.");
+                        break;
                     }
+                    }
+                } while (opcao != 6);
+                    opcao = 0;
                     break;
                 } case 2: {
                     
@@ -326,7 +364,7 @@ public class Menu {
                             opcao = (scan.nextInt());
 
                             scan.nextLine();
-
+                            
                             System.out.print("Digite o CNPJ: ");
                             String cnpj = scan.nextLine();
                             loja.setCnpj(cnpj);
