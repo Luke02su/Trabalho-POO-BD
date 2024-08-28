@@ -159,7 +159,7 @@ CREATE VIEW view_equipamento_envio_detalhado AS (
 
 -- Criando uma VIEW para o envio de computador, na qual pode-se ver os que foram e os que não foram enviados.
 CREATE VIEW view_computador_enviado_nao_enviado AS (
-	SELECT c.pk_computador AS id_computador, ee.fk_loja AS loja, e.modelo, ee.data_envio, ee.observacao
+	SELECT c.pk_computador AS id_computador, e.modelo
 	FROM equipamento e
     INNER JOIN computador c
     ON e.pk_equipamento = c.fk_equipamento
@@ -170,7 +170,7 @@ CREATE VIEW view_computador_enviado_nao_enviado AS (
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver os que foram e os que não foram enviadas.
 CREATE VIEW view_impressora_enviada_nao_enviada AS (
-	SELECT pk_impressora AS id_impressora, e.modelo, ee.data_envio, ee.observacao
+	SELECT pk_impressora AS id_impressora, e.modelo
     FROM equipamento e
     INNER JOIN impressora i
     ON e.pk_equipamento = i.fk_equipamento
@@ -181,7 +181,7 @@ CREATE VIEW view_impressora_enviada_nao_enviada AS (
 
 -- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que foram e os que não foram enviados.
 CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
-	SELECT pk_outros_equipamentos AS id_outros, e.tipo, e.modelo, o.descricao, ee.data_envio, ee.observacao
+	SELECT pk_outros_equipamentos AS id_outros, e.modelo
     FROM equipamento e
     INNER JOIN outros_equipamentos o
     ON e.pk_equipamento = o.fk_equipamento
@@ -327,5 +327,5 @@ SELECT * FROM log_equipamentos_descartados;
 SELECT * FROM log_envios_equipamentos_descartados;
 
 -- DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
--- DROP USER auxiliar01_ti;
--- DROP ROLE aux_ti;
+-- DROP USER auxiliar01_ti; -- Caso seja necessário excluir o usuário.
+-- DROP ROLE aux_ti; -- Caso seja necessário excluir o papel atribupido ao usuário.
