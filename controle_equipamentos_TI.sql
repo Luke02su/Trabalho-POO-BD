@@ -101,7 +101,7 @@ INSERT equipamento (tipo, modelo) VALUES
 
 -- Povoamento da  tabela de computador.
 INSERT INTO computador (fk_equipamento, pk_computador, processador, memoria, windows, armazenamento, formatacao, manutencao) VALUES
-(1, 130, 'i3 8100T', '8GB DDR4', '11 Pro', 'SSD 240GB', 'S', 'S'),
+(1, NULL, 'i3 8100T', '8GB DDR4', '11 Pro', 'SSD 240GB', 'S', 'S'),
 (2, NULL, 'Celeron N5095', '4GB DDR4', '11 Pro', 'SSD NvME 256GB', 'S', 'S'),
 (3, NULL, 'i3 6100T', '4GB DDR4', '11 Pro', 'HDD 500GB', 'S', 'N');
 
@@ -165,7 +165,7 @@ CREATE VIEW view_computador_enviado_nao_enviado AS (
     ON e.pk_equipamento = c.fk_equipamento
     LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
-    WHERE e.pk_equipamento IS NULL
+    WHERE ee.fk_equipamento IS NULL
 );
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver os que foram e os que não foram enviadas.
@@ -176,6 +176,7 @@ CREATE VIEW view_impressora_enviada_nao_enviada AS (
     ON e.pk_equipamento = i.fk_equipamento
 	LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
+    WHERE ee.fk_equipamento IS NULL IS NULL
 );
 
 -- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que foram e os que não foram enviados.
@@ -186,6 +187,7 @@ CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
     ON e.pk_equipamento = o.fk_equipamento
 	LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
+	WHERE ee.fk_equipamento IS NULL
 );
 
 -- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento'.) 
@@ -262,15 +264,6 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
-GRANT TRIGGER
-ON controle_equipamentos_ti.*
-TO aux_ti;
-GRANT EXECUTE
-ON PROCEDURE controle_equipamentos_ti.proc_deletar_equipamento
-TO aux_ti;
-GRANT EXECUTE
-ON PROCEDURE controle_equipamentos_ti.proc_deletar_envio_equipamento 
-TO aux_ti;
 GRANT USAGE ON *.* TO auxiliar01_ti;
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
@@ -314,8 +307,19 @@ BEGIN
 END%%
 DELIMITER ;
 
+GRANT TRIGGER
+ON controle_equipamentos_ti.*
+TO aux_ti;
+GRANT EXECUTE
+ON PROCEDURE controle_equipamentos_ti.proc_deletar_equipamento
+TO aux_ti;
+GRANT EXECUTE
+ON PROCEDURE controle_equipamentos_ti.proc_deletar_envio_equipamento 
+TO aux_ti;
+FLUSH PRIVILEGES;
+
 -- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
-CALL proc_deletar_equipamento (7);
+CALL proc_deletar_equipamento (9);
 CALL proc_deletar_envio_equipamento(1, 1);
 
 -- Selecionando os atributos da tabela 'log_equipamentos_descartados' e 'log_envios_equipamentos_descartados'.
@@ -323,3 +327,5 @@ SELECT * FROM log_equipamentos_descartados;
 SELECT * FROM log_envios_equipamentos_descartados;
 
 -- DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
+-- DROP USER auxiliar01_ti;
+-- DROP ROLE aux_ti;
