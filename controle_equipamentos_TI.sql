@@ -307,6 +307,7 @@ BEGIN
 END%%
 DELIMITER ;
 
+-- Atribuindo os privilégios restantes.
 GRANT TRIGGER
 ON controle_equipamentos_ti.*
 TO aux_ti;
