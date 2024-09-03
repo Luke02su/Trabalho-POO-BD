@@ -198,13 +198,17 @@ SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
 CREATE TABLE log_equipamentos_descartados (
-	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
+    pk_descarte INT AUTo_INCREMENT PRIMARY KEY,
     fk_equipamento INT NOT NULL,
     tipo VARCHAR (30) NOT NULL,
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
     usuario VARCHAR(25) NOT NULL
+    
+    -- INDEX idx_fk_equipamento (fk_equipamento),
+    
+    -- CONSTRAINT pk_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT -- Erro ao acinonar a TRIGGER.
 )ENGINE=InnoDB;
 
 CREATE TABLE log_envios_equipamentos_descartados (
@@ -213,7 +217,13 @@ CREATE TABLE log_envios_equipamentos_descartados (
     fk_loja INT NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
-    usuario VARCHAR(25) NOT NULL
+    usuario VARCHAR(25) NOT NULL,
+    
+	INDEX idx_fk_equipamento (fk_equipamento),
+    INDEX idx_fk_loja (fk_loja),
+    
+    CONSTRAINT pk_envio_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT pk_envio_loja_descarte FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON UPDATE RESTRICT ON DELETE RESTRICT
 )ENGINE=InnoDB;
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
@@ -320,7 +330,7 @@ TO aux_ti;
 FLUSH PRIVILEGES;
 
 -- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
-CALL proc_deletar_equipamento (9);
+CALL proc_deletar_equipamento(9);
 CALL proc_deletar_envio_equipamento(1, 1);
 
 -- Selecionando os atributos da tabela 'log_equipamentos_descartados' e 'log_envios_equipamentos_descartados'.
