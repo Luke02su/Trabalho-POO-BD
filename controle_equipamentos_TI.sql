@@ -213,7 +213,7 @@ CREATE TABLE log_equipamentos_descartados (
 -- Criando tabela de LOG para envios descartados de equipamento após o acionamento da TRIGGER 'trg_descarte_envio'
 CREATE TABLE log_envios_equipamentos_descartados (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY, -- Como a intenção que envio de um equipamento X para uma loja X possa ser descartado mais de uma vez, criou-se uma própria PRIMARY KEY que possibilita isso.
-    fk_equipamento INT NOT NULL UNIQUE,
+    fk_equipamento INT NOT NULL UNIQUE, -- Definindo como valor único.
     fk_loja INT NOT NULL UNIQUE,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
@@ -223,7 +223,7 @@ CREATE TABLE log_envios_equipamentos_descartados (
     INDEX idx_fk_loja (fk_loja)
 )ENGINE=InnoDB;
 
--- Importante resoalvar que não foi utilizada CONSTRAINTS nos LOGS em razão de não haver necessidade, além de estar havendo erro quanto a primeira TABLE de LOG após o acionamento de sua TRIGGER.
+-- Importante ressaltar que não foi utilizada CONSTRAINTS nos LOGS em razão de não haver necessidade, além de estar havendo erro quanto a primeira TABLE de LOG após o acionamento de sua TRIGGER. Neste caso, não há necessidade de ser atribuído pois esses dados não serão alterados nem excluídos.
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
 não se pode selecionar mais de uma tabela a serem concedidas os privilégios, houve a necessidade de 
