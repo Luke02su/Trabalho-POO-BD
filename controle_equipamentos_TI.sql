@@ -200,7 +200,7 @@ SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
 CREATE TABLE log_equipamentos_descartados (
-    fk_equipamento INT PRIMARY KEY,
+    fk_equipamento INT PRIMARY KEY, -- Atribuiu-se à 'fk_equipamento', em que será inserida a FOREIGN KEY da TABLE equipamento via TRIGGER, como PRIMARY KEY pois a intenção é que o equipamento deletado apenas uma única vez. 
     tipo VARCHAR (30) NOT NULL,
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
@@ -212,7 +212,7 @@ CREATE TABLE log_equipamentos_descartados (
 
 -- Criando tabela de LOG para envios descartados de equipamento após o acionamento da TRIGGER 'trg_descarte_envio'
 CREATE TABLE log_envios_equipamentos_descartados (
-	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
+	pk_descarte INT AUTO_INCREMENT PRIMARY KEY, -- Como a intenção que envio de um equipamento X para uma loja X possa ser descartado mais de uma vez, criou-se uma própria PRIMARY KEY que possibilita isso.
     fk_equipamento INT NOT NULL UNIQUE,
     fk_loja INT NOT NULL UNIQUE,
     motivo VARCHAR(30) NOT NULL,
