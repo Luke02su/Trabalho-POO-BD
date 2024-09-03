@@ -211,10 +211,10 @@ CREATE TABLE log_equipamentos_descartados (
 )ENGINE=InnoDB;
 
 -- Criando tabela de LOG para envios descartados de equipamento após o acionamento da TRIGGER 'trg_descarte_envio'
-CREATE TABLE log_envios_equipamentos_descartados (
+CREATE TABLE log_envios_descartados_equipamentos (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY, -- Como a intenção que envio de um equipamento X para uma loja X possa ser descartado mais de uma vez, criou-se uma própria PRIMARY KEY que possibilita isso.
-    fk_equipamento INT NOT NULL UNIQUE, -- Definindo como valor único.
-    fk_loja INT NOT NULL UNIQUE,
+    fk_equipamento INT NOT NULL UNIQUE, -- Definindo como valor único, para garatir que não haja duplicações.
+    fk_loja INT NOT NULL UNIQUE, -- Definindo como valor único, para garatir que não haja duplicações.
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
     usuario VARCHAR(25) NOT NULL,
@@ -261,7 +261,7 @@ GRANT SELECT
 ON controle_equipamentos_ti.log_equipamentos_descartados
 TO aux_ti;
 GRANT SELECT
-ON controle_equipamentos_ti.log_envios_equipamentos_descartados
+ON controle_equipamentos_ti.log_envios_descartados_equipamentos
 TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_equipamento_envio_detalhado
@@ -275,7 +275,6 @@ TO aux_ti;
 GRANT SELECT
 ON controle_equipamentos_ti.view_outros_equip_enviado_nao_enviado
 TO aux_ti;
-GRANT USAGE ON *.* TO auxiliar01_ti;
 FLUSH PRIVILEGES; -- Garantindo a atualização dos privilégios.
 
 -- Mostrando os privilégios da ROLE 'aux_ti'.
@@ -287,21 +286,21 @@ SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 /*A utilidade das TRIGGERS logos abaixo é justamente, respectivamente, saber quais os equipamentos que foram descartados, ou seja, que não serão usados mais
 e saber os descarte de envios de equipamentos, que se refere a: caso um equipamento seja devolvido de uma loja X, o usuário deverá deletar o envio de equipamento, esse dado será armazenado na tabela de log para isso.
 Em outras palavras, na tabela de envio de equipamentos importa-se somente o último envio dela, mas é importante saber os outros possíveis envios anteriores para outras lojas, ou até mesmo para a própria loja.*/
-DELIMITER && -- Delimitando o ínicio do bloco de código a ser executado
-CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE -- Antes de deletar.
+DELIMITER &&
+CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
 ON equipamento
-FOR EACH ROW -- Para cada linh faça:
-BEGIN -- Início.
+FOR EACH ROW 
+BEGIN
 	INSERT INTO log_equipamentos_descartados (fk_equipamento, tipo, modelo, motivo, data, usuario) VALUES (OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW(), USER());
-END&& -- Fim.
-DELIMITER ; -- Delimitando o final do bloco de código a ser executado.
+END&&
+DELIMITER ;
 
 DELIMITER &&
 CREATE TRIGGER trg_descarte_envio BEFORE DELETE
 ON envio_equipamento
 FOR EACH ROW
 BEGIN
-	INSERT INTO log_envios_equipamentos_descartados (pk_descarte, fk_equipamento, fk_loja, motivo, data, usuario) VALUES (NULL, OLD.fk_equipamento, OLD.fk_loja, 'Equipamento devolvido', NOW(), USER());
+	INSERT INTO log_envios_descartados_equipamentos (pk_descarte, fk_equipamento, fk_loja, motivo, data, usuario) VALUES (NULL, OLD.fk_equipamento, OLD.fk_loja, 'Equipamento devolvido', NOW(), USER());
 END&&
 DELIMITER ;
 
@@ -339,7 +338,7 @@ CALL proc_deletar_envio_equipamento(1, 1);
 
 -- Selecionando os atributos da tabela 'log_equipamentos_descartados' e 'log_envios_equipamentos_descartados'.
 SELECT * FROM log_equipamentos_descartados;
-SELECT * FROM log_envios_equipamentos_descartados;
+SELECT * FROM log_envios_descartados_equipamentos;
 
 -- DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
 -- DROP USER auxiliar01_ti; -- Caso seja necessário excluir o usuário.
