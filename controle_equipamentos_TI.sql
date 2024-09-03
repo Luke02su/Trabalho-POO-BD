@@ -284,6 +284,9 @@ SHOW GRANTS FOR aux_ti;
 SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 
 -- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa. Mesma coisa ocorre na TRIGGER log_equipamentos_descartados', inserindo na TABLE 'log_envios_equipamentos_descartados'.
+/*A utilidade das TRIGGERS logos abaixo é justamente, respectivamente, saber quais os equipamentos que foram descartados, ou seja, que não serão usados mais
+e saber os descarte de envios de equipamentos, que se refere a: caso um equipamento seja devolvido de uma loja X, o usuário deverá deletar o envio de equipamento, esse dado será armazenado na tabela de log para isso.
+Em outras palavras, na tabela de envio de equipamentos importa-se somente o último envio dela, mas é importante saber os outros possíveis envios anteriores para outras lojas, ou até mesmo para a própria loja.*/
 DELIMITER && -- Delimitando o ínicio do bloco de código a ser executado
 CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE -- Antes de deletar.
 ON equipamento
