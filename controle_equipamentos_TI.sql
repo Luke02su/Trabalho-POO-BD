@@ -1,23 +1,25 @@
-/*Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI, os
+/*	Este banco de dados tem como objetivo ser um sanar, futuramente, uma deficiência no setor de TI de uma empresa X quanto aos auxiliares de TI, os
 quais são responsáveis pela manutenção e controle de envios de equipamentos relacionados à TI para as suas demais filiais. 
-O objetivo principal é auxiliá-los com esse controle desse sistema, que até então era feita de forma não muito intuitiva: usando planilhas, 
-integrado este banco MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
+	O objetivo principal é auxiliá-los com esse controle desse sistema -- que até então era feita de forma não muito intuitiva: usando planilhas -- ao
+integrar este banco MySQL à uma linguagem de programação, no caso, o Java, a fim de integrar o CRUD.
 Desse modo, facilita-se a inserção, listagem, atualização e deleção de dados.
-Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho 
-que atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.*/
+	Como é um protótipo, pode-se haver equívocos nesta primeira versão. Entretanto, para os fins da empresa, um dos integrantes do trabalho 
+que atua na empresa definiu que tal modelo é o mais ideal a ser utilizado.
+	O grupo utilizou uma modelagem do banco inicialmente antes de dar início à sua criação.
+*/
 
--- Criação do banco de dados 'controle_equipamentos_ti'; definindo caracteres especiais e case-sensitive padrões; utilizando o banco.
-CREATE SCHEMA controle_equipamentos_ti
-DEFAULT CHARACTER SET utf8mb4
-DEFAULT COLLATE utf8mb4_bin;
-USE controle_equipamentos_ti;
+CREATE SCHEMA controle_equipamentos_ti -- Criação do banco de dados 'controle_equipamentos_ti'
+DEFAULT CHARACTER SET utf8mb4 -- Definindo caracteres especiais.
+DEFAULT COLLATE utf8mb4_bin; -- Definindo case-sensitive padrões.
+
+USE controle_equipamentos_ti; -- Utilizando o banco.
 
 -- Criação da tabela de equipamento, com a qual se relacionará a classe abstrata 'equipamento', em Java, ou seja, não poderá ser instanciada, servindo, desse como, como herança.
 CREATE TABLE equipamento (
 	 pk_equipamento INT AUTO_INCREMENT PRIMARY KEY,
 	 tipo VARCHAR(30) NOT NULL,
      modelo VARCHAR(30) NOT NULL
-) ENGINE=InnoDB;
+) ENGINE=InnoDB; -- Engenharia padrão mais recente que possibilita maior segurança e otimização comparada ao MyISAM. 
 
 -- Criação da tabela de computador, com a qual se relacionará a classe 'computadorDAO', em Java, instanciada.
 CREATE TABLE computador (
@@ -30,9 +32,9 @@ CREATE TABLE computador (
     formatacao VARCHAR(1) NOT NULL,
     manutencao VARCHAR(1) NOT NULL,
     
-    INDEX idx_fk_equipamento (fk_equipamento),
+    INDEX idx_fk_equipamento (fk_equipamento), -- Indexador que deixará a consulta mais otimizada ao utilizar a respectiva FOREIGN KEY.
     
-    CONSTRAINT fk_equipamento_computador FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_equipamento_computador FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON DELETE CASCADE ON UPDATE CASCADE -- Definindo a FOREIGN KEY. Deixado-a para deletar e/ou atualizar em cascata caso ela seja apagada ou atualizada na tabela com a tabela que está sendo referenciada nesta.
 ) ENGINE=InnoDB;
 
 -- Criação da tabela de computador, com a qual se relacionará a classe 'impressoraDAO', em Java, instanciada.
@@ -85,7 +87,7 @@ CREATE TABLE envio_equipamento (
 SHOW TABLES;
 
 -- Povoamento das tabelas de equipamento. Tais atributos da tabela serão herdadas, via FOREIGN KEY, para as tabelas computador, impressora e outros_equipamentos. (Em Java iso é visto mais facilmente.)
-START TRANSACTION;
+START TRANSACTION; -- Iniciando a transação manualmente, sem dar auto-commit. (Ideal para um DBA.)
 INSERT equipamento (tipo, modelo) VALUES
 ('Microcomputador', 'Dell Optiplex 3060'),
 ('Microcomputador', 'Bematech RC-8400'),
@@ -137,7 +139,7 @@ INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) 
 (8, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
 (9, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
 -- ROLLBACK; -- Caso deseje voltar para estado anterior antes das inserções.
-COMMIT;
+COMMIT; -- Comitando as inserções feitas.
 
 -- Selecionando todos os atributos das respectivas tabelas.
 SELECT * FROM equipamento;
@@ -157,7 +159,7 @@ CREATE VIEW view_equipamento_envio_detalhado AS (
     ON eq.fk_loja = l.pk_loja
 );
 
--- Criando uma VIEW para o envio de computador, na qual pode-se ver os que foram e os que não foram enviados.
+-- Criando uma VIEW para o envio de computador, na qual pode-se ver os que não foram enviados.
 CREATE VIEW view_computador_enviado_nao_enviado AS (
 	SELECT c.pk_computador AS id_computador, e.modelo
 	FROM equipamento e
@@ -168,7 +170,7 @@ CREATE VIEW view_computador_enviado_nao_enviado AS (
     WHERE ee.fk_equipamento IS NULL
 );
 
--- Criando uma VIEW para o envio de impressora, na qual pode-se ver os que foram e os que não foram enviadas.
+-- Criando uma VIEW para o envio de impressora, na qual pode-se ver as que não foram enviadas.
 CREATE VIEW view_impressora_enviada_nao_enviada AS (
 	SELECT pk_impressora AS id_impressora, e.modelo
     FROM equipamento e
@@ -179,7 +181,7 @@ CREATE VIEW view_impressora_enviada_nao_enviada AS (
     WHERE ee.fk_equipamento IS NULL IS NULL
 );
 
--- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que foram e os que não foram enviados.
+-- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que não foram enviados.
 CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
 	SELECT pk_outros_equipamentos AS id_outros, e.modelo
     FROM equipamento e
@@ -190,7 +192,7 @@ CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
 	WHERE ee.fk_equipamento IS NULL
 );
 
--- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento'.) 
+-- Selecionando todos os atributos das respectivas VIEWS. (A primeira é destinada ao READ do 'Envio_Equipamento', pois facilita para inserir o cript no Java, além de ser um facilitador para o usuáio do banco.) 
 SELECT * FROM view_equipamento_envio_detalhado;
 SELECT * FROM view_computador_enviado_nao_enviado;
 SELECT * FROM view_impressora_enviada_nao_enviada;
@@ -198,44 +200,43 @@ SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
 CREATE TABLE log_equipamentos_descartados (
-    pk_descarte INT AUTo_INCREMENT PRIMARY KEY,
-    fk_equipamento INT NOT NULL,
+    fk_equipamento INT PRIMARY KEY,
     tipo VARCHAR (30) NOT NULL,
     modelo VARCHAR(30) NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
-    usuario VARCHAR(25) NOT NULL
+    usuario VARCHAR(25) NOT NULL,
     
-    -- INDEX idx_fk_equipamento (fk_equipamento),
-    
-    -- CONSTRAINT pk_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT -- Erro ao acinonar a TRIGGER.
+    INDEX idx_fk_equipamento (fk_equipamento)
 )ENGINE=InnoDB;
 
+-- Criando tabela de LOG para envios descartados de equipamento após o acionamento da TRIGGER 'trg_descarte_envio'
 CREATE TABLE log_envios_equipamentos_descartados (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY,
-    fk_equipamento INT NOT NULL,
-    fk_loja INT NOT NULL,
+    fk_equipamento INT NOT NULL UNIQUE,
+    fk_loja INT NOT NULL UNIQUE,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
     usuario VARCHAR(25) NOT NULL,
     
 	INDEX idx_fk_equipamento (fk_equipamento),
-    INDEX idx_fk_loja (fk_loja),
-    
-    CONSTRAINT pk_envio_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT pk_envio_loja_descarte FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON UPDATE RESTRICT ON DELETE RESTRICT
+    INDEX idx_fk_loja (fk_loja)
 )ENGINE=InnoDB;
 
+-- Importante resoalvar que não foi utilizada CONSTRAINTS nos LOGS em razão de não haver necessidade, além de estar havendo erro quanto a primeira TABLE de LOG após o acionamento de sua TRIGGER.
+
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
-não se pode selecionar mais de uma tabela a serem concedidas os privilégios, deu-se a todos e depois revogou aquelas relativas a
-a um papael de DBA. (Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios.)*/
+não se pode selecionar mais de uma tabela a serem concedidas os privilégios, houve a necessidade de 
+atribuí-los uma a uma. 
+Criou-se o papel para caso haja outros usuários que contemplem os mesmos privilégios, facilitando, desse modo,
+a atribuição. (Além do 'auxiliar_01_TI,', poderia haver o 02, 03 etc.)*/
 CREATE USER 'auxiliar01_ti'@'%' IDENTIFIED BY 'Nac@2000';
 CREATE ROLE aux_ti;
 
 GRANT aux_ti TO 'auxiliar01_ti'@'%';
-SET DEFAULT ROLE aux_ti TO 'auxiliar01_ti'@'%';
+SET DEFAULT ROLE aux_ti TO 'auxiliar01_ti'@'%'; -- definindo papel como padrão para o usuário para que não haja erros de concessão de privilégios.
 
-GRANT USAGE
+GRANT USAGE -- Atribuindo o privilégio primordial de usar o banco ao papel. (Essencial para se conectá-lo ao Java.)
 ON contole_equipamentos_ti.*
 TO aux_ti;
 GRANT INSERT, SELECT, UPDATE, DELETE 
@@ -283,14 +284,14 @@ SHOW GRANTS FOR aux_ti;
 SHOW GRANTS FOR 'auxiliar01_ti'@'%';
 
 -- Criação da TRIGGER da tabela 'equipamento', em que, ao deletar algum dado desta, insere-se na tabela de 'log_equipamentos_descartados' os respectivos dados dessa. Mesma coisa ocorre na TRIGGER log_equipamentos_descartados', inserindo na TABLE 'log_envios_equipamentos_descartados'.
-DELIMITER &&
-CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE
+DELIMITER && -- Delimitando o ínicio do bloco de código a ser executado
+CREATE TRIGGER trg_descarte_equipamento BEFORE DELETE -- Antes de deletar.
 ON equipamento
-FOR EACH ROW
-BEGIN
-	INSERT INTO log_equipamentos_descartados (pk_descarte, fk_equipamento, tipo, modelo, motivo, data, usuario) VALUES (NULL, OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW(), USER());
-END&&
-DELIMITER ;
+FOR EACH ROW -- Para cada linh faça:
+BEGIN -- Início.
+	INSERT INTO log_equipamentos_descartados (fk_equipamento, tipo, modelo, motivo, data, usuario) VALUES (OLD.pk_equipamento, OLD.tipo, OLD.modelo, 'Velho ou estragado', NOW(), USER());
+END&& -- Fim.
+DELIMITER ; -- Delimitando o final do bloco de código a ser executado.
 
 DELIMITER &&
 CREATE TRIGGER trg_descarte_envio BEFORE DELETE
@@ -317,7 +318,7 @@ BEGIN
 END%%
 DELIMITER ;
 
--- Atribuindo os privilégios restantes.
+-- Atribuindo os privilégios restantes quanto às TRIGGES e PROCEDURES criadas.
 GRANT TRIGGER
 ON controle_equipamentos_ti.*
 TO aux_ti;
@@ -329,7 +330,7 @@ ON PROCEDURE controle_equipamentos_ti.proc_deletar_envio_equipamento
 TO aux_ti;
 FLUSH PRIVILEGES;
 
--- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento; já na segunda, além desse, passa-se também o de 'loja'.
+-- Chamando a PROCEDURE e passando o respectivo valor referente ao ID da tabela 'equipamento'; já na segunda, além desse, passa-se também o de 'loja'.
 CALL proc_deletar_equipamento(9);
 CALL proc_deletar_envio_equipamento(1, 1);
 
