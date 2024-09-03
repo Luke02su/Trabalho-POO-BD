@@ -199,6 +199,7 @@ SELECT * FROM view_impressora_enviada_nao_enviada;
 SELECT * FROM view_outros_equip_enviado_nao_enviado;
 
 -- Criando tabela de LOG para equipamentos descartados após o acionamento da TRIGGER 'trg_descarte_equipamento'
+-- Importante ressaltar que não foi utilizada CONSTRAINTS neste LOG em razão de não haver necessidade, além de estar havendo erro, pois tais dados já foram excluídos da TABLE referenciada após o acionamento de sua TRIGGER.
 CREATE TABLE log_equipamentos_descartados (
     fk_equipamento INT PRIMARY KEY, -- Atribuiu-se à 'fk_equipamento', em que será inserida a FOREIGN KEY da TABLE equipamento via TRIGGER, como PRIMARY KEY pois a intenção é que o equipamento deletado apenas uma única vez. 
     tipo VARCHAR (30) NOT NULL,
@@ -213,17 +214,18 @@ CREATE TABLE log_equipamentos_descartados (
 -- Criando tabela de LOG para envios descartados de equipamento após o acionamento da TRIGGER 'trg_descarte_envio'
 CREATE TABLE log_envios_descartados_equipamentos (
 	pk_descarte INT AUTO_INCREMENT PRIMARY KEY, -- Como a intenção que envio de um equipamento X para uma loja X possa ser descartado mais de uma vez, criou-se uma própria PRIMARY KEY que possibilita isso.
-    fk_equipamento INT NOT NULL UNIQUE, -- Definindo como valor único, para garatir que não haja duplicações.
-    fk_loja INT NOT NULL UNIQUE, -- Definindo como valor único, para garatir que não haja duplicações.
+    fk_equipamento INT NOT NULL,
+    fk_loja INT NOT NULL,
     motivo VARCHAR(30) NOT NULL,
 	data DATE NOT NULL,
     usuario VARCHAR(25) NOT NULL,
     
 	INDEX idx_fk_equipamento (fk_equipamento),
-    INDEX idx_fk_loja (fk_loja)
+    INDEX idx_fk_loja (fk_loja),
+    
+    CONSTRAINT pk_envio_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT pk_envio_loja_descarte FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON UPDATE RESTRICT ON DELETE RESTRICT
 )ENGINE=InnoDB;
-
--- Importante ressaltar que não foi utilizada CONSTRAINTS nos LOGS em razão de não haver necessidade, além de estar havendo erro quanto a primeira TABLE de LOG após o acionamento de sua TRIGGER. Neste caso, não há necessidade de ser atribuído pois esses dados não serão alterados nem excluídos.
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
 não se pode selecionar mais de uma tabela a serem concedidas os privilégios, houve a necessidade de 
