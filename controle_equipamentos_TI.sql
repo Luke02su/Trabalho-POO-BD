@@ -175,7 +175,7 @@ CREATE VIEW view_equipamento_envio_detalhado AS (
 );
 
 -- Criando uma VIEW para o envio de computador, na qual pode-se ver os que não foram enviados.
-CREATE VIEW view_computador_enviado_nao_enviado AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária.
+CREATE VIEW view_computador_enviado_nao_enviado AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária para ver quais computadores foram enviados, podendo torná-la mais simplificada.
 	SELECT c.pk_computador AS id_computador, e.modelo
 	FROM equipamento e
     INNER JOIN computador c
@@ -186,7 +186,7 @@ CREATE VIEW view_computador_enviado_nao_enviado AS ( -- Após criar, futuramente
 );
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver as que não foram enviadas.
-CREATE VIEW view_impressora_enviada_nao_enviada AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária.
+CREATE VIEW view_impressora_enviada_nao_enviada AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária para ver quais impressoras foram enviadas, podendo torná-la mais simplificada.
 	SELECT i.pk_impressora AS id_impressora, e.modelo
     FROM equipamento e
     INNER JOIN impressora i
@@ -197,7 +197,7 @@ CREATE VIEW view_impressora_enviada_nao_enviada AS ( -- Após criar, futuramente
 );
 
 -- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que não foram enviados.
-CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
+CREATE VIEW view_outros_equip_enviado_nao_enviado AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária para ver quais outros equipamentos foram enviados, podendo torná-la mais simplificada.
 	SELECT o.pk_outros_equipamentos AS id_outros, e.modelo
     FROM equipamento e
     INNER JOIN outros_equipamentos o
@@ -359,4 +359,4 @@ SELECT * FROM log_envios_descartados_equipamentos;
 
 /*DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
 DROP USER auxiliar01_ti; -- Caso seja necessário excluir o usuário.
-DROP ROLE aux_ti; -- Caso seja necessário excluir o papel atribupido ao usuário.
+DROP ROLE aux_ti; -- Caso seja necessário excluir o papel atribuído ao usuário.
