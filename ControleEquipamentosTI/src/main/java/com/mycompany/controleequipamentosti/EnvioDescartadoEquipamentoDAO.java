@@ -32,15 +32,16 @@ public class EnvioDescartadoEquipamentoDAO {
 
             // Itera sobre cada registro retornado pelo ResultSet
             while (rs.next()) {
-                // Cria um novo objeto Computador e define seus atributos com base nos dados do banco de dados
                 EnvioDescartadoEquipamento descartado = new EnvioDescartadoEquipamento();
+                descartado.setPk_descarte(rs.getInt("pk_descarte"));
+                descartado.setFk_equipamento(rs.getInt("fk_equipamento"));
                 descartado.setFk_equipamento(rs.getInt("fk_equipamento"));
                 descartado.setFk_loja(rs.getInt("fk_loja"));
                 descartado.setMotivo(rs.getString("motivo"));
                 descartado.setData(rs.getString("data"));
                 descartado.setUsuario(rs.getString("usuario"));
                 
-                // Adiciona o computador à lista de computadores
+                // Adiciona o computador à lista de envios descartados
                 enviosDescartados.add(descartado);
             }
             rs.close(); // Fecha o ResultSet
