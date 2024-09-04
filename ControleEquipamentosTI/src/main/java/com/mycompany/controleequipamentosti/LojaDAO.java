@@ -18,6 +18,7 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
     }
 
     // Método para adicionar uma nova loja ao banco de dados
+    @Override
     public void adicionar(Loja loja) {
         String sql = "INSERT INTO loja (cnpj, cidade, telefone) VALUES (?, ?, ?)";
         
@@ -42,20 +43,21 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
                 // Desfaz a transação em caso de erro
                 connection.rollback(); 
             } catch (SQLException rollbackEx) {
-                throw new RuntimeException("Erro ao fazer rollback!", rollbackEx);
+                throw new RuntimeException("Erro ao fazer rollback.", rollbackEx);
             }
-            throw new RuntimeException("Erro ao adicionar loja!", e);
+            throw new RuntimeException("Erro ao adicionar loja.", e);
         } finally {
             try {
                 // Redefine o auto-commit para true
                 connection.setAutoCommit(true); 
             } catch (SQLException ex) {
-                throw new RuntimeException("Erro ao redefinir auto-commit!", ex);
+                throw new RuntimeException("Erro ao redefinir auto-commit.", ex);
             }
         }
     }
     
     // Método para obter uma lista de todas as lojas
+    @Override
     public List<Loja> getLista() {
         try {
             // Cria uma lista para armazenar as lojas
@@ -90,6 +92,7 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
     }
     
     // Método para listar todas as lojas
+    @Override
     public void listar() {
         System.out.println("------------ LISTAS COMPLETAS DE LOJAS ------------");
         // Obtém a lista de lojas do banco de dados
@@ -107,6 +110,7 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
     }
     
     // Método para listar uma loja específica pelo ID
+    @Override
     public void listarID(int id) {
         System.out.println("------------ LISTA COMPLETA DE LOJA " + id + " ------------");
         // Obtém a lista de lojas do banco de dados
@@ -128,11 +132,14 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
             } 
         }
         if (!inserido) {
-            System.out.println("Sinto muito! Esta loja não existe.");
+            System.out.println("\nNenhuma loja com o ID " + id + " foi encontrada na base de dados.\n");
+        } else {
+            System.out.println("\nListagem de loja com ID " + id + " realizada com sucesso!\n");
         }
     }
         
     // Método para atualizar os dados de uma loja
+    @Override
     public void atualizar(Loja loja, int id) {
         String sql = "UPDATE loja SET cnpj = ?, gerente = ?, cidade = ?, telefone = ? WHERE pk_loja = ?";
 
@@ -141,6 +148,7 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
             PreparedStatement stmt1 = this.connection.prepareStatement("SELECT pk_loja FROM loja WHERE pk_loja = ?");
             stmt1.setInt(1, id);
             ResultSet rs = stmt1.executeQuery();
+            int cont = 0;
 
             if (rs.next()) {
                 connection.setAutoCommit(false);
@@ -148,13 +156,17 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
                 // Atualiza os dados da loja
                 PreparedStatement stmt2 = connection.prepareStatement(sql);
                 stmt2.setString(1, loja.getCnpj());
+                cont++;
                 stmt2.setString(2, loja.getGerente());
+                cont++;
                 stmt2.setString(3, loja.getCidade());
+                cont++;
                 stmt2.setString(4, loja.getTelefone());
+                cont++;
                 stmt2.setInt(5, id);
 
-                int rows1 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em loja: " + rows1);
+                stmt2.executeUpdate();
+                System.out.println("Linhas afetadas em loja: " + cont);
 
                 // Confirma a transação
                 connection.commit();
@@ -184,11 +196,101 @@ public class LojaDAO implements EquipamentoLojaMetodos<Loja> {
         }
     }
     
+    @Override
     public void atualizarUmAtributo(Loja loja, int id) {
-        
+        String sql = "UPDATE loja SET";
+        boolean updateLoja = false;
+        int cont = 0;
+
+        try {
+            // Primeiro, selecione o pk_equipamento associado ao id do computador
+            PreparedStatement stmt1 = this.connection.prepareStatement("SELECT pk_loja FROM loja WHERE pk_loja = ?");
+            stmt1.setInt(1, id);
+            ResultSet rs = stmt1.executeQuery();
+
+            if (rs.next()) {
+                connection.setAutoCommit(false);
+                if (loja.getCnpj() != null) {
+                    sql += " cnpj = ?,";
+                    updateLoja = true;
+                    cont++;
+                }
+                
+                if (loja.getGerente() != null) {
+                    sql += " gerente = ?,";
+                    updateLoja = true;
+                    cont++;
+                }
+                
+                if (loja.getCidade() != null) {
+                    sql += " cidade = ?,";
+                    updateLoja = true;
+                    cont++;
+                }
+                
+                if (loja.getTelefone()!= null) {
+                    sql += " telefone = ?,";
+                    updateLoja = true;
+                    cont++;
+                }
+
+                if (updateLoja) {
+                    sql = sql.endsWith(",") ? sql.substring(0, sql.length() - 1) : sql;
+                    sql += " WHERE pk_loja = ?";
+                }
+
+                // Atualizando os dados do computador, se necessário
+                if (updateLoja) {
+                    PreparedStatement stmt2 = connection.prepareStatement(sql);
+                    int index = 1;
+                    if (loja.getCnpj() != null) {
+                        stmt2.setString(index++, loja.getCnpj());
+                    }
+                    if (loja.getGerente() != null) {
+                        stmt2.setString(index++, loja.getGerente());
+                    }
+                    if (loja.getCidade() != null) {
+                        stmt2.setString(index++, loja.getCidade());
+                    }
+                    if (loja.getTelefone() != null) {
+                        stmt2.setString(index++, loja.getTelefone());
+                    }
+                    
+                    stmt2.setInt(index++, id);
+
+                    stmt2.executeUpdate();
+                    System.out.println("Colunas afetadas na tupla de loja: " + cont);
+                    stmt2.close();
+                }
+
+                connection.commit();
+            } else {
+                System.out.println("\nErro! Nenhuma loja encontrada com o ID: " + id);
+                System.out.println("");
+            }
+
+            rs.close();
+            stmt1.close();
+
+        } catch (SQLException e) {
+            try {
+                connection.rollback(); // Reverte a transação em caso de erro
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Restaura o modo de commit automático
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
         
     // Método para deletar uma loja pelo ID
+    @Override
     public void deletar(int id) {
         
         PreparedStatement stmt = null;

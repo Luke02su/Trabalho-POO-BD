@@ -57,14 +57,14 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
             // Commit da transação
             connection.commit();
 
-            System.out.println("Computador adicionado com sucesso."); // Mensagem de sucesso
+            System.out.println("\nComputador adicionado com sucesso!\n"); // Mensagem de sucesso
         } catch (SQLException e) {
             try {
                 // Se houver um erro, reverter a transação
                 connection.rollback();
                 System.out.println("Erro na gravação de computador. Transação revertida."); // Mensagem de erro
             } catch (SQLException rollbackEx) {
-                throw new RuntimeException("Erro ao reverter a transação", rollbackEx);
+                throw new RuntimeException("Erro ao reverter a transação.", rollbackEx);
             }
             throw new RuntimeException(e);
         } finally {
@@ -72,7 +72,7 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
                 // Restaurar o estado de autocommit
                 connection.setAutoCommit(true);
             } catch (SQLException ex) {
-                throw new RuntimeException("Erro ao restaurar o estado de autocommit", ex);
+                throw new RuntimeException("Erro ao restaurar o estado de autocommit.", ex);
             }
         }
     }
@@ -118,8 +118,9 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
     }
     
     // Método para listar todos os computadores
+    @Override
     public void listar() {
-        System.out.println("------------ LISTA COMPLETA DE COMPUTADORES ------------");
+        System.out.println("\n---------- LISTA COMPLETA DE COMPUTADORES ----------");
         // Obtém a lista de computadores do banco de dados
         List<Computador> computador = this.getLista();
         
@@ -134,15 +135,16 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
             System.out.println("Versão do Windows: " + c.getWindows());
             System.out.println("Armazenamento " + c.getArmazenamento());
             System.out.println("Formatado? " + c.getFormatacao());
-            System.out.println("MP E/Ou MC: " + c.getManutencao());
-            System.out.println("---------------------------------------------- ");
+            System.out.println("M. preventiva e/ou M. corretiva: " + c.getManutencao());
+            System.out.println("--------------------------------------------------");
         }
-        System.out.println("");
+        System.out.println("\nListagem completa do todos computadores realizada com sucesso!\n");
     }
     
     // Método para listar um computador específico com base no ID
+    @Override
     public void listarID(int id) {
-        System.out.println("------------ LISTAGEM COMPLETA DE COMPUTADOR " + id + "------------");
+        System.out.println("\n---------- LISTAGEM COMPLETA DE COMPUTADOR " + id + " ----------");
         // Obtém a lista de computadores do banco de dados
         List<Computador> computador = this.getLista();
         
@@ -158,155 +160,23 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
                 System.out.println("Modelo: " + c.getModelo());
                 System.out.println("Memória RAM: " + c.getMemoria());
                 System.out.println("Versão do Windows: " + c.getWindows());
-                System.out.println("Armazenamento " + c.getArmazenamento());
+                System.out.println("Armazenamento: " + c.getArmazenamento());
                 System.out.println("Formatado? " + c.getFormatacao());
-                System.out.println("MP E/OU MC: " + c.getManutencao());
-                System.out.println("----------------------------------");
+                System.out.println("M. preventiva e/ou M. corretiva: " + c.getManutencao());
+                System.out.println("--------------------------------------------------");
                 inserido = true;
                 break;
             }
         }
-        
         if (!inserido) {
-            System.out.println("Sinto muito! Este computador não existe.");
-        }
-        
-        System.out.println("");
-    }
-    
-        // Método para atualizar um computador e o seu equipamento associado
-    @Override
-    public void atualizarUmAtributo(Computador computador, int id) {
-            String sql1 = "UPDATE equipamento SET";
-            String sql2 = "UPDATE computador SET";
-            boolean updateEquipamento = false;
-            boolean updateComputador = false;
-
-    try {
-        // Primeiro, selecione o pk_equipamento associado ao id do computador
-        PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
-        stmt.setInt(1, id);
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            int pk_equipamento = rs.getInt("fk_equipamento");
-            connection.setAutoCommit(false);
-
-            // Construir a consulta SQL para atualizar o equipamento
-            if (computador.getTipo() != null) {
-                sql1 += " tipo = ?";
-                updateEquipamento = true;
-            }
-            if (computador.getModelo() != null) {
-                sql1 += " modelo = ?";
-                updateEquipamento = true;
-            }
-            if (updateEquipamento) {
-                sql1 += " WHERE pk_equipamento = ?";
-            }
-
-            // Construir a consulta SQL para atualizar o computador
-            if (computador.getProcessador() != null) {
-                sql2 += " processador = ?";
-                updateComputador = true;
-            }
-            if (computador.getMemoria() != null) {
-                sql2 += " memoria = ?";
-                updateComputador = true;
-            }
-            if (computador.getWindows() != null) {
-                sql2 += " windows = ?";
-                updateComputador = true;
-            }
-            if (computador.getArmazenamento() != null) {
-                sql2 += " armazenamento = ?";
-                updateComputador = true;
-            }
-            if (computador.getFormatacao() != null) {
-                sql2 += " formatacao = ?";
-                updateComputador = true;
-            }
-            if (computador.getManutencao() != null) {
-                sql2 += " manutencao = ?";
-                updateComputador = true;
-            }
-            if (updateComputador) {
-                sql2 += " WHERE pk_computador = ?";
-            }
-
-            // Atualizando os dados do equipamento, se necessário
-            if (updateEquipamento) {
-                PreparedStatement stmt1 = connection.prepareStatement(sql1);
-                int index = 1;
-                if (computador.getTipo() != null) {
-                    stmt1.setString(index++, computador.getTipo());
-                }
-                if (computador.getModelo() != null) {
-                    stmt1.setString(index++, computador.getModelo());
-                }
-                stmt1.setInt(index++, pk_equipamento);
-                
-                int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows1);
-                stmt1.close();
-            }
-
-            // Atualizando os dados do computador, se necessário
-            if (updateComputador) {
-                PreparedStatement stmt2 = connection.prepareStatement(sql2);
-                int index = 1;
-                if (computador.getProcessador() != null) {
-                    stmt2.setString(index++, computador.getProcessador());
-                }
-                if (computador.getMemoria() != null) {
-                    stmt2.setString(index++, computador.getMemoria());
-                }
-                if (computador.getWindows() != null) {
-                    stmt2.setString(index++, computador.getWindows());
-                }
-                if (computador.getArmazenamento() != null) {
-                    stmt2.setString(index++, computador.getArmazenamento());
-                }
-                if (computador.getFormatacao() != null) {
-                    stmt2.setString(index++, computador.getFormatacao());
-                }
-                if (computador.getManutencao() != null) {
-                    stmt2.setString(index++, computador.getManutencao());
-                }
-                stmt2.setInt(index++, id);
-                
-                int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows2);
-                stmt2.close();
-            }
-
-            connection.commit();
+            System.out.println("\nNenhum computador com o ID " + id + " foi encontrado na base de dados.\n");
         } else {
-            System.out.println("Nenhum computador encontrado com o ID: " + id);
-            System.out.println("");
-        }
-
-        rs.close();
-        stmt.close();
-
-    } catch (SQLException e) {
-        try {
-            connection.rollback(); // Reverte a transação em caso de erro
-        } catch (SQLException rollbackEx) {
-            rollbackEx.printStackTrace();
-        }
-        e.printStackTrace();
-        throw new RuntimeException(e);
-    } finally {
-        try {
-            connection.setAutoCommit(true); // Restaura o modo de commit automático
-        } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("\nListagem de computador com ID " + id + " realizada com sucesso!\n");
         }
     }
-}
     
     // Método para atualizar um computador e o seu equipamento associado
+    @Override
     public void atualizar(Computador computador, int id) {
         String sql1 = "UPDATE equipamento SET tipo = ?, modelo = ? WHERE pk_equipamento = ?";
         String sql2 = "UPDATE computador SET processador = ?, memoria = ?, windows = ?, armazenamento = ?, formatacao = ?, manutencao = ? WHERE pk_computador = ?";
@@ -316,6 +186,8 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
             PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
+            int cont = 0;
+            int cont2 = 0;
 
             if (rs.next()) {
                 int pk_equipamento = rs.getInt("fk_equipamento");
@@ -325,30 +197,38 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
                 // Atualizando os dados do equipamento
                 PreparedStatement stmt1 = connection.prepareStatement(sql1);
                 stmt1.setString(1, computador.getTipo());
+                cont++;
                 stmt1.setString(2, computador.getModelo());
+                cont++;
                 stmt1.setInt(3, pk_equipamento);
 
-                int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows1);
+                stmt1.executeUpdate();
+                System.out.println("\nColunas afetadas na tupla de equipamento " + pk_equipamento + ": " + cont);
 
                 // Atualizando os dados do computador
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setString(1, computador.getProcessador());
+                cont2++;
                 stmt2.setString(2, computador.getMemoria());
+                cont2++;
                 stmt2.setString(3, computador.getWindows());
+                cont2++;
                 stmt2.setString(4, computador.getArmazenamento());
+                cont2++;
                 stmt2.setString(5, computador.getFormatacao());
+                cont2++;
                 stmt2.setString(6, computador.getManutencao());
+                cont2++;
                 stmt2.setInt(7, id);
 
-                int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows2);
+                stmt2.executeUpdate();
+                System.out.println("Colunas afetadas na tupla de computador " + id + ": " + cont2 + "\n");
 
                 connection.commit();
                 stmt1.close();
                 stmt2.close();
             } else {
-                System.out.println("Nenhum computador encontrado com o ID: " + id);
+                System.out.println("\nNenhum computador com ID " + id + " foi encontrado na base de dados.\n");
             }
 
             rs.close();
@@ -371,7 +251,143 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
         }
     }
     
+     // Método para atualizar um computador e o seu equipamento associado
+    @Override
+    public void atualizarUmAtributo(Computador computador, int id) {
+        String sql1 = "UPDATE equipamento SET";
+        String sql2 = "UPDATE computador SET";
+        boolean updateEquipamento = false;
+        boolean updateComputador = false;
+
+        try {
+            // Primeiro, selecione o pk_equipamento associado ao id do computador
+            PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM computador WHERE pk_computador = ?");
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int pk_equipamento = rs.getInt("fk_equipamento");
+                connection.setAutoCommit(false);
+
+                // Construir a consulta SQL para atualizar o equipamento
+                if (computador.getTipo() != null) {
+                    sql1 += " tipo = ?,";
+                    updateEquipamento = true;
+                }
+                if (computador.getModelo() != null) {
+                    sql1 += " modelo = ?,";
+                    updateEquipamento = true;
+                }
+                if (updateEquipamento) {
+                    sql1 = sql1.endsWith(",") ? sql1.substring(0, sql1.length() - 1) : sql1;
+                    sql1 += " WHERE pk_equipamento = ?";
+                }
+
+                // Construir a consulta SQL para atualizar o computador
+                if (computador.getProcessador() != null) {
+                    sql2 += " processador = ?,";
+                    updateComputador = true;
+                }
+                if (computador.getMemoria() != null) {
+                    sql2 += " memoria = ?,";
+                    updateComputador = true;
+                }
+                if (computador.getWindows() != null) {
+                    sql2 += " windows = ?,";
+                    updateComputador = true;
+                }
+                if (computador.getArmazenamento() != null) {
+                    sql2 += " armazenamento = ?,";
+                    updateComputador = true;
+                }
+                if (computador.getFormatacao() != null) {
+                    sql2 += " formatacao = ?,";
+                    updateComputador = true;
+                }
+                if (computador.getManutencao() != null) {
+                    sql2 += " manutencao = ?,";
+                    updateComputador = true;
+                }
+                if (updateComputador) {
+                    sql2 = sql2.endsWith(",") ? sql2.substring(0, sql2.length() - 1) : sql2;
+                    sql2 += " WHERE pk_computador = ?";
+                }
+
+                // Atualizando os dados do equipamento, se necessário
+                if (updateEquipamento) {
+                    PreparedStatement stmt1 = connection.prepareStatement(sql1);
+                    int index = 1;
+                    if (computador.getTipo() != null) {
+                        stmt1.setString(index++, computador.getTipo());
+                    }
+                    if (computador.getModelo() != null) {
+                        stmt1.setString(index++, computador.getModelo());
+                    }
+                    stmt1.setInt(index++, pk_equipamento);
+
+                    int rows1 = stmt1.executeUpdate();
+                    System.out.println("\nColunas afetadas na tupla de equipamento: " + rows1 + "\n");
+                    stmt1.close();
+                }
+
+                // Atualizando os dados do computador, se necessário
+                if (updateComputador) {
+                    PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                    int index = 1;
+                    if (computador.getProcessador() != null) {
+                        stmt2.setString(index++, computador.getProcessador());
+                    }
+                    if (computador.getMemoria() != null) {
+                        stmt2.setString(index++, computador.getMemoria());
+                    }
+                    if (computador.getWindows() != null) {
+                        stmt2.setString(index++, computador.getWindows());
+                    }
+                    if (computador.getArmazenamento() != null) {
+                        stmt2.setString(index++, computador.getArmazenamento());
+                    }
+                    if (computador.getFormatacao() != null) {
+                        stmt2.setString(index++, computador.getFormatacao());
+                    }
+                    if (computador.getManutencao() != null) {
+                        stmt2.setString(index++, computador.getManutencao());
+                    }
+                    stmt2.setInt(index++, id);
+
+                    int rows2 = stmt2.executeUpdate();
+                    System.out.println("\nColunas afetadas na tupla de computador: " + rows2 + "\n");
+                    stmt2.close();
+                }
+
+                connection.commit();
+            } else {
+                System.out.println("\nNenhum computador com ID " + id + " foi encontrado na base de dados.\n");
+            }
+
+            rs.close();
+            stmt.close();
+
+        } catch (SQLException e) {
+            try {
+                // Se houver um erro, reverter a transação
+                connection.rollback();
+                System.out.println("Erro na gravação de computador. Transação revertida."); // Mensagem de erro
+            } catch (SQLException rollbackEx) {
+                throw new RuntimeException("Erro ao reverter a transação.", rollbackEx);
+            }
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                // Restaurar o estado de autocommit
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                throw new RuntimeException("Erro ao restaurar o estado de autocommit.", ex);
+            }
+        }
+    }
+    
     // Método para deletar um computador e seu equipamento associado
+    @Override
     public void deletar(int id) {
         PreparedStatement stmt1 = null;
         PreparedStatement stmt2 = null;
@@ -402,16 +418,16 @@ public class ComputadorDAO implements EquipamentoLojaMetodos<Computador> {
 
                 // Executa a exclusão do computador
                 int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em computador: " + rows1);
+                System.out.println("\nLinhas afetadas em computador: " + rows1);
 
                 // Executa a exclusão do equipamento
                 int rows2 = stmt3.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows2);
+                System.out.println("Linhas afetadas em equipamento: " + rows2 + "\n");
 
                 // Confirma a transação
                 connection.commit();
             } else {
-                System.out.println("Nenhum equipamento encontrado para o computador com ID: " + id);
+                System.out.println("Nenhum computador com ID " + id + " foi encontrado na base de dados.\n");
             }
             System.out.println("");
         } catch (SQLException e) {

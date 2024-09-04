@@ -14,14 +14,16 @@ public class Menu {
         Outros_Equipamentos outroEquip = new Outros_Equipamentos();
         Loja loja = new Loja();
         EnvioEquipamento envio = new EnvioEquipamento();
-        Equipamento equipamento = new Computador(); //Precisa-se apenas de tipo e modelo, poderia ser instanciado Impressora ou Outros Computadores.
-
+        Equipamento equipamento = new Computador(); //Precisa-se apenas de tipo e modelo em envio, poderia ser instanciado Impressora ou Outros Computadores.
+        
         //Criando objetos dos DAOs.
         ComputadorDAO daoC = new ComputadorDAO();
         ImpressoraDAO daoI = new ImpressoraDAO();
         Outros_EquipamentosDAO daoO = new Outros_EquipamentosDAO();
         LojaDAO daoL = new LojaDAO();
         EnvioEquipamentoDAO daoE = new EnvioEquipamentoDAO();
+        EquipamentoDescartadoDAO daoED = new EquipamentoDescartadoDAO();
+        EnvioDescartadoEquipamentoDAO daoEED = new EnvioDescartadoEquipamentoDAO();
         
         int opcao = 0;
         
@@ -31,10 +33,12 @@ public class Menu {
             System.out.println("Escolha uma opção:");
             System.out.println("1. CRUD de Computador.");
             System.out.println("2. CRUD de Impressora.");
-            System.out.println("3. CRUD de Outro Equipamento.");
+            System.out.println("3. CRUD de Equipamento Genérico.");
             System.out.println("4. CRUD de Loja.");
             System.out.println("5. CRUD de Envio de Equipamento.");
-            System.out.println("6. Sair do programa.");
+            System.out.println("6. Listar todos equipamentos descartados.");
+            System.out.println("7. Listar todos envios de equipamentos descartados.");
+            System.out.println("8. Sair do programa.");
             
             System.out.print("\nEscolha: ");
             opcao = (scan.nextInt());
@@ -61,12 +65,12 @@ public class Menu {
                             case 1: {
                                 System.out.println("Digite os dados do computador a serem cadastrados:\n");
 
-                                scan.nextLine(); // Limpa o buffer
-
-                                System.out.print("Digite o tipo de computador: ");
+                                scan.nextLine();
+                                System.out.print("Digite o tipo: ");
                                 String tipo = (scan.nextLine());  
                                 computador.setTipo(tipo);
-
+                                
+                                System.out.print("Digite o modelo: ");
                                 String modelo = (scan.nextLine());
                                 computador.setModelo(modelo);
 
@@ -86,11 +90,11 @@ public class Menu {
                                 String armazenamento = (scan.nextLine());
 
                                 computador.setArmazenamento(armazenamento);
-                                System.out.print("Foi formatado? : ");
+                                System.out.print("Foi formatado? ");
                                 String formatacao = (scan.nextLine());
                                 computador.setFormatacao(formatacao);
 
-                                System.out.print("Foi feito manutenção?");
+                                System.out.print("Foi feita manutenção? ");
                                 String manutencao = (scan.nextLine());
                                 computador.setManutencao(manutencao);
 
@@ -108,7 +112,7 @@ public class Menu {
                                 System.out.print("Digite o ID do computador a ser atualizado (verifique se existe): ");
                                 int id = scan.nextInt();
 
-                                System.out.println("1. Atualizar tipo.");
+                                System.out.println("\n1. Atualizar tipo.");
                                 System.out.println("2. Atualizar modelo.");
                                 System.out.println("3. Atualizar´processador.");
                                 System.out.println("4. Atualizar memoria.");
@@ -178,6 +182,7 @@ public class Menu {
 
                                     daoC.atualizarUmAtributo(computador, id);
                                 } else if (opcao == 9) {
+                                    scan.nextLine();
                                     System.out.print("Digite o novo tipo de computador: ");
                                     String tipo = scan.nextLine();
                                     computador.setTipo(tipo);
@@ -220,9 +225,6 @@ public class Menu {
                                 opcao = scan.nextInt();
                                 daoC.deletar(opcao);
                                 break;
-                            } case 6: {
-                                System.out.println("Retornando ao menu principal...");
-                                break;
                             } default: {
                                 System.out.println("Opção inválida. Escolha novamente.");
                                 break;
@@ -240,6 +242,7 @@ public class Menu {
                         System.out.println("3. Ler dados de uma impressora.");
                         System.out.println("4. Atualizar dados de uma impressora.");
                         System.out.println("5. Deletar dados de uma impressora.");
+                         System.out.println("6. Retornar ao menu principal.");
 
                         System.out.print("\nEscolha: ");
                         opcao = (scan.nextInt());
@@ -247,7 +250,7 @@ public class Menu {
 
                         switch(opcao) {
                             case 1: {
-                            System.out.println("Digite os dados de impressora a serem cadastrados: ");
+                            System.out.println("Digite os dados de impressora a serem cadastrados:\n");
 
                             scan.nextLine();
 
@@ -279,9 +282,10 @@ public class Menu {
                             int id = scan.nextInt();
                             scan.nextLine(); 
                             
-                            System.out.println("1. Atualizar tipo.");
+                            System.out.println("\n1. Atualizar tipo.");
                             System.out.println("2. Atualizar modelo.");
                             System.out.println("3. Atualizar revisão.");
+                            System.out.println("4. Atualizar todos os atributos.");
                             
                             System.out.print("\nEscolha: ");
                             opcao = (scan.nextInt());
@@ -334,8 +338,6 @@ public class Menu {
 
                             daoI.deletar(id);
                             break;
-                        } case 6: {
-                            System.out.println("Retornando ao menu principal...");
                         } default: {
                             System.out.println("Digite uma opção válida. Tente novamente");
                             break;
@@ -347,19 +349,20 @@ public class Menu {
                     } case 3: {
                         do {
                         System.out.println("--- Menu do CRUD de Equipamento Genérico ---");
-                        System.out.println("\nEscolha uma opção:\n");
+                        System.out.println("Escolha uma opção:");
                         System.out.println("1. Criar dados para um equipamento genérico.");
                         System.out.println("2. Ler dados de todos equipamentos genéricos.");
                         System.out.println("3. Ler dados de um equipamento genérico.");
                         System.out.println("4. Atualizar dados de equipamento genérico.");
                         System.out.println("5. Deletar dados de equipamento genérico.");
+                        System.out.println("6. Retornar ao menu principal.");
 
                         System.out.print("\nEscolha: ");
                         opcao = (scan.nextInt());
                         System.out.println("");
 
                             if(opcao == 1) {
-                                System.out.println("Digite os dados de impressora a serem cadastrados: ");
+                                System.out.println("Digite os dados de equipamento genérico a serem cadastrados: ");
 
                                 scan.nextLine();
 
@@ -384,13 +387,14 @@ public class Menu {
                                 daoO.listarID(opcao);
                             } else if (opcao == 4) {
 
-                            System.out.print("Digite o ID da impressora a ser atualizada (verifique se existe): ");
+                            System.out.print("Digite o ID do equipamento genérico a ser atualizada (verifique se existe): ");
                             int id = scan.nextInt();
                             scan.nextLine();
                             
-                            System.out.println("1. Atualizar tipo.");
+                            System.out.println("\n1. Atualizar tipo.");
                             System.out.println("2. Atualizar modelo.");
                             System.out.println("3. Atualizar descrição.");
+                            System.out.println("4. Atualizar todos atributos.");
                             
                             System.out.print("\nEscolha: ");
                             opcao = (scan.nextInt());
@@ -440,10 +444,11 @@ public class Menu {
                             opcao = (scan.nextInt());
                             daoO.deletar(opcao);
                         }
-                            break;
-                        }while (opcao != 6);
+                        } while (opcao != 6);
                         opcao = 0; // Retornando valor para zero para que não adentre em nada.
+                        break;
                     } case 4: {
+                        do {
                             System.out.println("--- Menu do CRUD de Loja ---");
                             System.out.println("Escolha uma opção:");
                             System.out.println("1. Criar dados para uma loja.");
@@ -451,19 +456,19 @@ public class Menu {
                             System.out.println("3. Ler dados de uma loja.");
                             System.out.println("4. Atualizar dados de uma loja.");
                             System.out.println("5. Deletar dados de uma loja.");
+                            System.out.println("6. Retornar ao menu principal.");
 
                             System.out.print("\nEscolha: ");
                             opcao = (scan.nextInt());
                             System.out.println("");
 
                             if (opcao == 1) {
-
                                 scan.nextLine();
 
                                 System.out.print("Digite o CNPJ: ");
                                 String cnpj = scan.nextLine();
                                 loja.setCnpj(cnpj);
-
+                                
                                 System.out.print("Digite o nome do gerente: ");
                                 String gerente = scan.nextLine();
                                 loja.setGerente(gerente);
@@ -486,33 +491,76 @@ public class Menu {
                             } else if (opcao == 4) {
 
                                 System.out.print("Digite o ID de uma loja a ser atualizado: ");
-                                opcao = (scan.nextInt());
-
+                                int id = scan.nextInt();
                                 scan.nextLine();
 
-                                System.out.print("Digite o CNPJ: ");
-                                String cnpj = scan.nextLine();
-                                loja.setCnpj(cnpj);
+                                System.out.println("\n1. Atualizar CNPJ.");
+                                System.out.println("2. Atualizar gerente.");
+                                System.out.println("3. Atualizar cidade.");
+                                System.out.println("4. Atualizar telefone.");
+                                System.out.println("5. Atualizar todos atributos.");
 
-                                System.out.print("Digite o nome do gerente: ");
-                                String gerente = scan.nextLine();
-                                loja.setGerente(gerente);
+                                System.out.print("\nEscolha: ");
+                                opcao = (scan.nextInt());
+                                System.out.println("");
+                                
+                                if (opcao == 1) {
+                                    scan.nextLine();
+                                    System.out.print("Digite o CNPJ: ");
+                                    String cnpj = scan.nextLine();
+                                    loja.setCnpj(cnpj);
+                                        
+                                    daoL.atualizarUmAtributo(loja, id);
+                                } else if (opcao == 2) {
+                                    scan.nextLine();
+                                    System.out.print("Digite o nome do gerente: ");
+                                    String gerente = scan.nextLine();
+                                    loja.setGerente(gerente);
+                                    
+                                    daoL.atualizarUmAtributo(loja, id);
+                                } else if (opcao == 3) {
+                                    scan.nextLine();
+                                    System.out.print("Digite a cidade: ");
+                                    String cidade = scan.nextLine();
+                                    loja.setCidade(cidade);
+                                    
+                                    daoL.atualizarUmAtributo(loja, id);
+                                } else if (opcao == 4) {
+                                    scan.nextLine();
+                                    System.out.print("Digite o telefone: ");
+                                    String telefone = scan.nextLine();
+                                    loja.setTelefone(telefone);
 
-                                System.out.print("Digite a cidade: ");
-                                String cidade = scan.nextLine();
-                                loja.setCidade(cidade);
+                                    daoL.atualizarUmAtributo(loja, id);
+                                
+                                } else if (opcao == 5) {
+                                    scan.nextLine();
+                                    System.out.print("Digite o CNPJ: ");
+                                    String cnpj = scan.nextLine();
+                                    loja.setCnpj(cnpj);
 
-                                System.out.print("Digite o telefone: ");
-                                String telefone = scan.nextLine();
-                                loja.setTelefone(telefone);
+                                    System.out.print("Digite o nome do gerente: ");
+                                    String gerente = scan.nextLine();
+                                    loja.setGerente(gerente);
 
-                                daoL.atualizar(loja, opcao);
+                                    System.out.print("Digite a cidade: ");
+                                    String cidade = scan.nextLine();
+                                    loja.setCidade(cidade);
+
+                                    System.out.print("Digite o telefone: ");
+                                    String telefone = scan.nextLine();
+                                    loja.setTelefone(telefone);
+
+                                    daoL.atualizar(loja, id);
+                                 }
                             } else if (opcao == 5) {
                                 System.out.print("Digite o ID de uma loja a ser deletado: ");
                                 opcao = (scan.nextInt());
                                 daoL.deletar(opcao);
                             }
-                            break;
+                        } while (opcao != 6);
+                        opcao = 0; // Retornando valor para zero para que não adentre em nada.
+                        break;
                         } case 5: {
                             System.out.println("--- Menu do CRUD de Envio de Equipamento ---");
                             System.out.println("Escolha uma opção:");
@@ -521,6 +569,7 @@ public class Menu {
                             System.out.println("3. Ler dados de um envio de equipamento.");
                             System.out.println("4. Atualizar dados de um envio de equipamento.");
                             System.out.println("5. Deletar dados de um envio de equipamento.");
+                            System.out.println("6. Retornar ao menu principal.");
 
                             System.out.print("\nEscolha: ");
                             opcao = (scan.nextInt());
@@ -592,13 +641,19 @@ public class Menu {
                             }
                             break;
                     } case 6: {
-                        System.out.println("");
-                         System.exit(0);
+                        daoED.listar();
+                        break;
+                    } case 7: {
+                        daoEED.listar();
+                        break;
+                    } case 8: {
+                        System.out.println("Você encerrou o programa.\n");
+                        System.exit(0);
                     } default: {
                         System.out.println("Opção inválida. Digite uma opção válida.\n");
                         break;
                     }
                 }   
-            } while (opcao != 6);
+            } while (opcao != 8);
         }
     }

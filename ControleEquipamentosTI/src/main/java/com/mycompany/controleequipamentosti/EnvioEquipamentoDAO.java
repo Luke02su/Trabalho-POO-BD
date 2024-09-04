@@ -19,7 +19,7 @@ public class EnvioEquipamentoDAO {
     }
     
         public void adicionar(EnvioEquipamento envio) {
-        // Comando SQL para inserir um novo equipamento e computador
+        // Comando SQL para inserir um envio de equipamento
         String sql = "INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES (?, ?, ?, ?)";
 
         try {
@@ -27,7 +27,7 @@ public class EnvioEquipamentoDAO {
             connection.setAutoCommit(false);
             
             PreparedStatement stmt = connection.prepareStatement(sql);
-            stmt.setInt(1, envio.getEquipamento().getPk_equipamento()); // fk_equipamento
+            stmt.setInt(1, envio.getEquipamento().getPk_equipamento());
             stmt.setInt(2, envio.getLoja().getPk_loja());
             stmt.setString(3, envio.getData_envio());
             stmt.setString(4, envio.getObservacao());
@@ -40,7 +40,7 @@ public class EnvioEquipamentoDAO {
             try {
                 // Se houver um erro, reverter a transação
                 connection.rollback();
-                System.out.println("Erro na gravação de envio de computador. Transação revertida."); // Mensagem de erro
+                System.out.println("Erro na gravação de envio de equipamento. Transação revertida."); // Mensagem de erro
             } catch (SQLException rollbackEx) {
                 throw new RuntimeException("Erro ao reverter a transação", rollbackEx);
             }
@@ -70,7 +70,7 @@ public class EnvioEquipamentoDAO {
             while (rs.next()) {
                 // Cria um novo objeto Contato e define seus atributos com base nos dados do banco de dados
                 EnvioEquipamento envio = new EnvioEquipamento();
-                Equipamento equipamento = new Computador(); // commo e abstract, usei objeto de pc
+                Equipamento equipamento = new Computador(); // Como é abstract, instanciei objeto computador
                 Loja loja = new Loja(); 
 
                 envio.setEquipamento(equipamento);
@@ -102,12 +102,12 @@ public class EnvioEquipamentoDAO {
         
         // Itera sobre cada contato e imprime seus detalhes
         for (EnvioEquipamento eq : envio) {
-            System.out.println("ID do equipamento: " + eq.getEquipamento().getPk_equipamento()); // Imprime o email do contato
+            System.out.println("ID do equipamento: " + eq.getEquipamento().getPk_equipamento());
             System.out.println("Tipo: " + eq.getEquipamento().getTipo());
             System.out.println("Modelo: " + eq.getEquipamento().getModelo());
-            System.out.println("ID da loja :" + eq.getLoja().getPk_loja());
+            System.out.println("ID da loja: " + eq.getLoja().getPk_loja());
             System.out.println("Gerente: " + eq.getLoja().getGerente());
-            System.out.println("Data de envio:" + eq.getData_envio());
+            System.out.println("Data de envio: " + eq.getData_envio());
             System.out.println("Observação: " + eq.getObservacao());
             System.out.println("----------------------------------");
         }
@@ -119,8 +119,6 @@ public class EnvioEquipamentoDAO {
         // Obtém a lista de contatos do banco de dados
         List<EnvioEquipamento> envio = this.getLista();
         
-        // Itera sobre cada contato e imprime seus detalhes
-        
         boolean inserido = false;
        
         for (EnvioEquipamento eq : envio) {
@@ -128,17 +126,19 @@ public class EnvioEquipamentoDAO {
                 System.out.println("ID do equipamento: " + eq.getEquipamento().getPk_equipamento()); // Imprime o email do contato
                 System.out.println("Tipo: " + eq.getEquipamento().getTipo());
                 System.out.println("Modelo: " + eq.getEquipamento().getModelo());
-                System.out.println("ID da loja:" + eq.getLoja().getPk_loja());
+                System.out.println("ID da loja: " + eq.getLoja().getPk_loja());
                 System.out.println("Gerente: " + eq.getLoja().getGerente());
-                System.out.println("Data de envio:" + eq.getData_envio());
+                System.out.println("Data de envio: " + eq.getData_envio());
                 System.out.println("Observação: " + eq.getObservacao());
                 System.out.println("----------------------------------");
                 inserido = true;
                 break;
             } 
         }
-        if (inserido == false) {
-            System.out.println("Sinto muito! Este equipamento genérico não existe.");
+        if (!inserido) {
+            System.out.println("\nSinto muito! Este equipamento genérico não existe.\n");
+        } else {
+            System.out.println("\nListagem de envio de equipamento realizada com sucesso!\n");
         }
     }
     
@@ -146,11 +146,13 @@ public class EnvioEquipamentoDAO {
         String sql = "UPDATE envio_equipamento SET data_envio = ?, observacao = ? WHERE fk_equipamento = ? AND fk_loja = ?";
 
         try {
-            // Primeiro, selecione o pk_equipamento associado ao id do computador
+            // Primeiro, selecione o pk_equipamento associado ao id de equipamento
             PreparedStatement stmt1 = this.connection.prepareStatement("SELECT fk_equipamento, fk_loja FROM envio_equipamento WHERE fk_equipamento = ? AND fk_loja = ?");
             stmt1.setInt(1, idEquipamento);
             stmt1.setInt(2, idLoja);
             ResultSet rs = stmt1.executeQuery();
+            int cont = 0;
+            int cont2 = 0;
 
             if (rs.next()) {
                 int fk_equipamento = rs.getInt("fk_equipamento");
@@ -161,17 +163,19 @@ public class EnvioEquipamentoDAO {
                 // Atualizando os dados de equipamento
                 PreparedStatement stmt2 = connection.prepareStatement(sql);
                 stmt2.setString(1, envio.getData_envio());
+                cont++;
                 stmt2.setString(2, envio.getObservacao());
+                cont++;
                 stmt2.setInt(3, fk_equipamento);
                 stmt2.setInt(4, fk_loja);
                 
-                int rows1 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em envio de equipamento: " + rows1);
+                stmt2.executeUpdate();
+                System.out.println("Colunas afetadas na tupla de envio de equipamento: " + cont);
 
                 connection.commit();
                 stmt2.close();
             } else {
-                System.out.println("Dados não atualizados! Nenhum envio de equipamento encontrado com o ID de equipamento " + idEquipamento + "e ID de loja" + idLoja);
+                System.out.println("Dados não atualizados! Nenhum envio de equipamento encontrado com o ID de equipamento " + idEquipamento + " e ID de loja " + idLoja);
             }
 
             rs.close();
@@ -208,16 +212,15 @@ public class EnvioEquipamentoDAO {
             // Começa a transação
             connection.setAutoCommit(false);
 
-            // Executa a exclusão do computador
+            // Executa a exclusão de envio
             int rows1 = stmt.executeUpdate();
             if (rows1 > 0) {
-                System.out.println("Linhas afetadas em envio de equipamento: " + rows1);
+                System.out.println("\nLinhas afetadas em envio de equipamento: " + rows1 + "\n");
                 connection.commit();
             } else {
-                System.out.println("Nenhuma envio encontrado com ID de equipamento " + idEquipamento + "e ID de loja " + idLoja);
+                System.out.println("\nNenhuma envio encontrado com ID de equipamento " + idEquipamento + " e ID de loja " + idLoja + "\n");
             }
                 
-            System.out.println("");
         } catch (SQLException e) {
             try {
                 if (connection != null) {

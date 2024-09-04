@@ -19,6 +19,7 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
     }
 
     // Método para adicionar uma nova impressora ao banco de dados
+    @Override
     public void adicionar(Impressora impressora) {
         String sql1 = "INSERT INTO equipamento (tipo, modelo) VALUES (?, ?)";
         String sql2 = "INSERT INTO impressora (fk_equipamento, revisao) VALUES (?, ?)";
@@ -52,25 +53,27 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
 
             // Confirma a transação
             connection.commit();
-            System.out.println("Impressora adicionada com sucesso!"); // Mensagem de sucesso
+            System.out.println("\nImpressora adicionada com sucesso!\n"); // Mensagem de sucesso
             stmt1.close();
         } catch (SQLException e) {
             try {
-                connection.rollback(); // Reverte a transação em caso de erro
+                connection.rollback(); // Reverte a transação em caso de 
+                System.out.println("Erro na gravação de impressora. Transação revertida.");
             } catch (SQLException rollbackEx) {
-                throw new RuntimeException("Erro ao fazer rollback!", rollbackEx);
+                throw new RuntimeException("Erro ao reverter a transação.", rollbackEx);
             }
-            throw new RuntimeException("Erro ao adicionar impressora!", e);
+            throw new RuntimeException(e);
         } finally {
             try {
                 connection.setAutoCommit(true); // Restaura o modo de commit automático
             } catch (SQLException ex) {
-                throw new RuntimeException("Erro ao redefinir auto-commit!", ex);
+                throw new RuntimeException("Erro ao restaurar o estado de autocommit.", ex);
             }
         }
     }
 
     // Método para obter a lista de impressoras do banco de dados
+    @Override
     public List<Impressora> getLista() {
         try {
             // Cria uma lista para armazenar as impressoras recuperadas do banco de dados
@@ -105,6 +108,7 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
     }
     
     // Método para listar todas as impressoras
+    @Override
     public void listar() {
         System.out.println("------------ LISTAS COMPLETAS DE IMPRESSORAS ------------");
         // Obtém a lista de impressoras do banco de dados
@@ -117,18 +121,19 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
             System.out.println("Tipo: " + i.getTipo());
             System.out.println("Modelo: " + i.getModelo());
             System.out.println("Revisão: " + i.getRevisao());
-            System.out.println("----------------------------------");
+            System.out.println("--------------------------------------------------");
         }
     }
     
     // Método para listar uma impressora específica pelo ID
+    @Override
     public void listarID(int id) {
         System.out.println("------------ LISTA COMPLETA DE IMPRESSORA " + id + " ------------");
         // Obtém a lista de impressoras do banco de dados
         List<Impressora> impressoras = this.getLista();
         
         // Itera sobre cada impressora e imprime seus detalhes
-        boolean encontrado = false;
+        boolean inserido = false;
        
         for (Impressora i : impressoras) {
             if(id == i.getPk_impressora()) {
@@ -137,20 +142,25 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
                 System.out.println("Tipo: " + i.getTipo());
                 System.out.println("Modelo: " + i.getModelo());
                 System.out.println("Revisão: " + i.getRevisao()); 
-                System.out.println("----------------------------------");
-                encontrado = true;
+                System.out.println("--------------------------------------------------");
+                inserido = true;
                 break;
             } 
         }
-        if (!encontrado) {
-            System.out.println("Sinto muito! Esta impressora não existe.");
+        if (!inserido) {
+            System.out.println("\nNenhuma impressora com o ID " + id + " foi encontrada na base de dados.\n");
+        } else {
+            System.out.println("\nListagem de impressora com ID " + id + " realizada com sucesso!\n");
         }
     }
     
     // Método para atualizar os detalhes de uma impressora
+    @Override
     public void atualizar(Impressora impressora, int id) {
         String sql1 = "UPDATE equipamento SET tipo = ?, modelo = ? WHERE pk_equipamento = ?";
         String sql2 = "UPDATE impressora SET revisao = ? WHERE pk_impressora = ?";
+        int cont = 0;
+        int cont2 = 0;
 
         try {
             // Primeiro, seleciona o fk_equipamento associado ao id da impressora
@@ -166,19 +176,23 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
                 // Atualiza os dados na tabela equipamento
                 PreparedStatement stmt1 = connection.prepareStatement(sql1);
                 stmt1.setString(1, impressora.getTipo());
+                cont++;
                 stmt1.setString(2, impressora.getModelo());
+                cont++;
                 stmt1.setInt(3, pk_equipamento);
 
-                int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows1);
+                stmt1.executeUpdate();
+                System.out.println("\nColunas afetada na tupla de equipamento " +  pk_equipamento + ": " + cont);
+                
 
                 // Atualiza os dados na tabela impressora
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
                 stmt2.setString(1, impressora.getRevisao());
+                cont2++;
                 stmt2.setInt(2, id);
 
-                int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em impressora: " + rows2 + "\n");
+                stmt2.executeUpdate();
+                System.out.println("Colunas afetadas na tupla de impressora " +  id + ": " + cont2 + "\n");
 
                 connection.commit();
                 stmt1.close();
@@ -207,103 +221,107 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
         }
     }
     
+    @Override
     public void atualizarUmAtributo(Impressora impressora, int id) {
             String sql1 = "UPDATE equipamento SET";
             String sql2 = "UPDATE impressora SET";
             boolean updateEquipamento = false;
             boolean updateImpressora = false;
 
-    try {
-        // Primeiro, selecione o pk_equipamento associado ao id do computador
-        PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
-        stmt.setInt(1, id);
-        ResultSet rs = stmt.executeQuery();
+        try {
+            // Primeiro, selecione o pk_equipamento associado ao id do computador
+            PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM impressora WHERE pk_impressora = ?");
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
 
-        if (rs.next()) {
-            int pk_equipamento = rs.getInt("fk_equipamento");
-            connection.setAutoCommit(false);
+            if (rs.next()) {
+                int pk_equipamento = rs.getInt("fk_equipamento");
+                connection.setAutoCommit(false);
 
-            // Construir a consulta SQL para atualizar o equipamento
-            if (impressora.getTipo() != null) {
-                sql1 += " tipo = ?";
-                updateEquipamento = true;
-            }
-            if (impressora.getModelo() != null) {
-                sql1 += " modelo = ?";
-                updateEquipamento = true;
-            }
-            if (updateEquipamento) {
-                sql1 += " WHERE pk_equipamento = ?";
-            }
-
-            // Construir a consulta SQL para atualizar o computador
-            if (impressora.getRevisao() != null) {
-                sql2 += " revisao = ?";
-                updateImpressora= true;
-            }
-            
-            if (updateImpressora) {
-                sql2 += " WHERE pk_impressora = ?";
-            }
-
-            // Atualizando os dados do equipamento, se necessário
-            if (updateEquipamento) {
-                PreparedStatement stmt1 = connection.prepareStatement(sql1);
-                int index = 1;
+                // Construir a consulta SQL para atualizar o equipamento
                 if (impressora.getTipo() != null) {
-                    stmt1.setString(index++, impressora.getTipo());
+                    sql1 += " tipo = ?,";
+                    updateEquipamento = true;
                 }
                 if (impressora.getModelo() != null) {
-                    stmt1.setString(index++, impressora.getModelo());
+                    sql1 += " modelo = ?,";
+                    updateEquipamento = true;
                 }
-                stmt1.setInt(index++, pk_equipamento);
-                
-                int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + rows1);
-                stmt1.close();
-            }
+                if (updateEquipamento) {
+                    sql1 = sql1.endsWith(",") ? sql1.substring(0, sql1.length() - 1) : sql1;
+                    sql1 += " WHERE pk_equipamento = ?";
+                }
 
-            // Atualizando os dados do computador, se necessário
-            if (updateImpressora) {
-                PreparedStatement stmt2 = connection.prepareStatement(sql2);
-                int index = 1;
+                // Construir a consulta SQL para atualizar o computador
                 if (impressora.getRevisao() != null) {
-                    stmt2.setString(index++, impressora.getRevisao());
+                    sql2 += " revisao = ?,";
+                    updateImpressora= true;
                 }
-                stmt2.setInt(index++, id);
-                
-                int rows2 = stmt2.executeUpdate();
-                System.out.println("Linhas afetadas em impressora: " + rows2);
-                stmt2.close();
+
+                if (updateImpressora) {
+                    sql2 = sql2.endsWith(",") ? sql2.substring(0, sql2.length() - 1) : sql2;
+                    sql2 += " WHERE pk_impressora = ?";
+                }
+
+                // Atualizando os dados do equipamento, se necessário
+                if (updateEquipamento) {
+                    PreparedStatement stmt1 = connection.prepareStatement(sql1);
+                    int index = 1;
+                    if (impressora.getTipo() != null) {
+                        stmt1.setString(index++, impressora.getTipo());
+                    }
+                    if (impressora.getModelo() != null) {
+                        stmt1.setString(index++, impressora.getModelo());
+                    }
+                    stmt1.setInt(index++, pk_equipamento);
+
+                    int rows1 = stmt1.executeUpdate();
+                    System.out.println("Colunas afetadas na tupla de equipamento: " + rows1 + "\n");
+                    stmt1.close();
+                }
+
+                // Atualizando os dados de impressora, se necessário
+                if (updateImpressora) {
+                    PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                    int index = 1;
+                    if (impressora.getRevisao() != null) {
+                        stmt2.setString(index++, impressora.getRevisao());
+                    }
+                    stmt2.setInt(index++, id);
+
+                    int rows2 = stmt2.executeUpdate();
+                    System.out.println("Colunas afetadas na tupla de impressora: " + rows2 + "\n");
+                    stmt2.close();
+                }
+
+                connection.commit();
+            } else {
+                System.out.println("\nErro! Nenhuma impressora encontrada com o ID: " + id);
+                System.out.println("");
             }
 
-            connection.commit();
-        } else {
-            System.out.println("\nErro! Nenhuma impressora encontrada com o ID: " + id);
-            System.out.println("");
-        }
+            rs.close();
+            stmt.close();
 
-        rs.close();
-        stmt.close();
-
-    } catch (SQLException e) {
-        try {
-            connection.rollback(); // Reverte a transação em caso de erro
-        } catch (SQLException rollbackEx) {
-            rollbackEx.printStackTrace();
-        }
-        e.printStackTrace();
-        throw new RuntimeException(e);
-    } finally {
-        try {
-            connection.setAutoCommit(true); // Restaura o modo de commit automático
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Reverte a transação em caso de erro
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Restaura o modo de commit automático
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
     
     // Método para deletar uma impressora e seu equipamento associado
+    @Override
     public void deletar(int id) {
         PreparedStatement stmt1 = null;
         PreparedStatement stmt2 = null;
@@ -343,9 +361,8 @@ public class ImpressoraDAO implements EquipamentoLojaMetodos<Impressora> {
                 // Confirma a transação
                 connection.commit();
             } else {
-                System.out.println("Nenhum equipamento encontrado para a impressora com ID: " + id);
+                System.out.println("Nenhuma impressora com ID " + id + " foi encontrada na base de dados.\n");
             }
-            System.out.println("");
         } catch (SQLException e) {
             try {
                 if (connection != null) {

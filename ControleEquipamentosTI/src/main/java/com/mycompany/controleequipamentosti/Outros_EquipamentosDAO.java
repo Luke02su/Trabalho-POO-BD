@@ -18,6 +18,7 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
     }
 
     // Adiciona um novo registro na tabela de equipamentos e na tabela de outros equipamentos
+    @Override
     public void adicionar(Outros_Equipamentos outros) {
         String sql1 = "INSERT INTO equipamento (tipo, modelo) VALUES (?, ?)";
         String sql2 = "INSERT INTO outros_equipamentos (fk_equipamento, descricao) VALUES (?, ?)";
@@ -51,25 +52,26 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
 
             // Comita a transação
             connection.commit();
-            System.out.println("Outro equipamento adicionado com sucesso!"); // Mensagem de sucesso
+            System.out.println("\nEquipamento adicionado com sucesso!\n"); // Mensagem de sucesso
             stmt1.close();
         } catch (SQLException e) {
             try {
                 connection.rollback(); // Reverte em caso de erro
             } catch (SQLException rollbackEx) {
-                throw new RuntimeException("Erro ao fazer rollback!", rollbackEx);
+                throw new RuntimeException("Erro ao fazer rollback.", rollbackEx);
             }
-            throw new RuntimeException("Erro ao adicionar outro equipamento!", e);
+            throw new RuntimeException("Erro ao adicionar outro equipamento.", e);
         } finally {
             try {
                 connection.setAutoCommit(true); // Restaura o auto-commit para true
             } catch (SQLException ex) {
-                throw new RuntimeException("Erro ao redefinir auto-commit!", ex);
+                throw new RuntimeException("Erro ao redefinir auto-commit.", ex);
             }
         }
     }
 
     // Recupera uma lista de todos os outros equipamentos
+    @Override
     public List<Outros_Equipamentos> getLista() {
         try {
             // Cria uma lista para armazenar os equipamentos recuperados do banco de dados
@@ -121,6 +123,7 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
     }
     
     // Lista um equipamento específico baseado no ID
+    @Override
     public void listarID(int id) {
         System.out.println("------------ LISTA COMPLETA DE OUTRO EQUIPAMENTO " + id + " ------------");
         // Obtém a lista de outros equipamentos do banco de dados
@@ -136,13 +139,13 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
                 System.out.println("Tipo: " + o.getTipo());
                 System.out.println("Modelo: " + o.getModelo());
                 System.out.println("Descrição: " + o.getDescricao());
-                System.out.println("----------------------------------");
+                System.out.println("--------------------------------------------------");
                 inserido = true;
                 break;
             } 
         }
         if (!inserido) {
-            System.out.println("Sinto muito! Este equipamento genérico não existe.");
+            System.out.println("\nSinto muito! Este equipamento genérico não existe.\n");
         }
     }
     
@@ -174,7 +177,7 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
                 stmt1.setInt(3, fk_equipamento);
 
                 int rows1 = stmt1.executeUpdate();
-                System.out.println("Linhas afetadas em equipamento: " + cont);
+                System.out.println("\nColunas afetadas em equipamento: " + cont);
 
                 // Atualiza os dados do outro equipamento
                 PreparedStatement stmt2 = connection.prepareStatement(sql2);
@@ -183,14 +186,14 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
                 stmt2.setInt(2, id);
 
                 stmt2.executeUpdate();
-                System.out.println("Colunas afetadas em outros equipamentos: " + cont2 + "\n");
+                System.out.println("Colunas da linha afetadas em outros equipamentos: " + cont2 + "\n");
 
                 connection.commit();
                 
                 stmt1.close();
                 stmt2.close();
             } else {
-                System.out.println("Dados não atualizados! Nenhum equipamento genérico encontrado com o ID: " + id);
+                System.out.println("\nNenhum equipamento genérico com ID " + id + " foi encontrado na base de dados.\n");
             }
 
             rs.close();
@@ -215,109 +218,106 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
     
    public void atualizarUmAtributo(Outros_Equipamentos outros_equip, int id) {
             String sql1 = "UPDATE equipamento SET";
-            String sql2 = "UPDATE outros_euipamentos SET";
+            String sql2 = "UPDATE outros_equipamentos SET";
             boolean updateEquipamento = false;
             boolean updateOutro = false;
             int cont = 0;
             int cont2 = 0;
 
-    try {
-        
-        // Primeiro, selecione o pk_equipamento associado ao id do computador
-        PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
-        stmt.setInt(1, id);
-        ResultSet rs = stmt.executeQuery();
+        try {
 
-        if (rs.next()) {
-            int pk_equipamento = rs.getInt("fk_equipamento");
-            connection.setAutoCommit(false);
+            // Primeiro, selecione o pk_equipamento associado ao id de outros equipamentos
+            PreparedStatement stmt = this.connection.prepareStatement("SELECT fk_equipamento FROM outros_equipamentos WHERE pk_outros_equipamentos = ?");
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
 
-            // Construir a consulta SQL para atualizar o equipamento
-            if (outros_equip.getTipo() != null) {
-                sql1 += " tipo = ?";
-                updateEquipamento = true;
-                cont++;
-            }
-            if (outros_equip.getModelo() != null) {
-                sql1 += " modelo = ?";
-                updateEquipamento = true;
-                cont++;
-            }
-            if (updateEquipamento) {
-                sql1 += " WHERE pk_equipamento = ?";
-            }
+            if (rs.next()) {
+                int pk_equipamento = rs.getInt("fk_equipamento");
+                connection.setAutoCommit(false);
 
-            // Construir a consulta SQL para atualizar o computador
-            if (outros_equip.getDescricao() != null) {
-                sql2 += " revisao = ?";
-                updateOutro= true;
-                if (updateEquipamento == true) {
-                    cont2++;
-                }
-            }
-            
-            if (updateOutro) {
-                sql2 += " WHERE pk_impressora = ?";
-            }
-
-            // Atualizando os dados do equipamento, se necessário
-            if (updateEquipamento) {
-                PreparedStatement stmt1 = connection.prepareStatement(sql1);
-                int index = 1;
+                // Construir a consulta SQL para atualizar o equipamento
                 if (outros_equip.getTipo() != null) {
-                    stmt1.setString(index++, outros_equip.getTipo());
+                    sql1 += " tipo = ?,";
+                    updateEquipamento = true;
                 }
                 if (outros_equip.getModelo() != null) {
-                    stmt1.setString(index++, outros_equip.getModelo());
+                    sql1 += " modelo = ?,";
+                    updateEquipamento = true;
                 }
-                stmt1.setInt(index++, pk_equipamento);
-                
-                stmt1.executeUpdate();
-                System.out.println("Colunas afetadas em equipamento " + id + ": " + cont);
-                stmt1.close();
-            }
+                if (updateEquipamento) {
+                    sql1 = sql1.endsWith(",") ? sql1.substring(0, sql1.length() - 1) : sql2; // Remove vírgula extra se houver
+                    sql1 += " WHERE pk_equipamento = ?";
+                }
 
-            // Atualizando os dados do computador, se necessário
-            if (updateOutro) {
-                PreparedStatement stmt2 = connection.prepareStatement(sql2);
-                int index = 1;
+                // Construir a consulta SQL para atualizar outro equipamento
                 if (outros_equip.getDescricao() != null) {
-                    stmt2.setString(index++, outros_equip.getDescricao());
+                    sql2 += " descricao = ?,";
+                    updateOutro= true;
                 }
-                stmt2.setInt(index++, id);
-                
-                stmt2.executeUpdate();
-                System.out.println("Colunas afetadas em equipamento genérico " + id + ": " + cont2);
-                stmt2.close();
+
+                if (updateOutro) {
+                    sql2 = sql2.endsWith(",") ? sql2.substring(0, sql2.length() - 1) : sql2; // Remove vírgula extra se houver
+                    sql2 += " WHERE pk_outros_equipamentos = ?";
+                }
+
+                // Atualizando os dados do equipamento, se necessário
+                if (updateEquipamento) {
+                    PreparedStatement stmt1 = connection.prepareStatement(sql1);
+                    int index = 1;
+                    if (outros_equip.getTipo() != null) {
+                        stmt1.setString(index++, outros_equip.getTipo());
+                    }
+                    if (outros_equip.getModelo() != null) {
+                        stmt1.setString(index++, outros_equip.getModelo());
+                    }
+                    stmt1.setInt(index++, pk_equipamento);
+
+                    int rows1 = stmt1.executeUpdate();
+                    System.out.println("Coluna da linha afetada em equipamento " + id + ": " + rows1 + "\n");
+                    stmt1.close();
+                }
+
+                // Atualizando os dados de outro equipamento, se necessário
+                if (updateOutro) {
+                    PreparedStatement stmt2 = connection.prepareStatement(sql2);
+                    int index = 1;
+                    if (outros_equip.getDescricao() != null) {
+                        stmt2.setString(index++, outros_equip.getDescricao());
+                    }
+                    stmt2.setInt(index++, id);
+
+                    int rows2 = stmt2.executeUpdate();
+                    System.out.println("Colunas afetadas em equipamento genérico " + id + ": " + rows2 + "\n");
+                    stmt2.close();
+                }
+
+                connection.commit();
+            } else {
+                System.out.println("\nNenhum equipamento genérico com ID " + id + " foi encontrado na base de dados.\n");
             }
 
-            connection.commit();
-        } else {
-            System.out.println("\nErro! Nenhuma impressora encontrada com o ID: " + id);
-            System.out.println("");
-        }
+            rs.close();
+            stmt.close();
 
-        rs.close();
-        stmt.close();
-
-    } catch (SQLException e) {
-        try {
-            connection.rollback(); // Reverte a transação em caso de erro
-        } catch (SQLException rollbackEx) {
-            rollbackEx.printStackTrace();
-        }
-        e.printStackTrace();
-        throw new RuntimeException(e);
-    } finally {
-        try {
-            connection.setAutoCommit(true); // Restaura o modo de commit automático
         } catch (SQLException e) {
+            try {
+                connection.rollback(); // Reverte a transação em caso de erro
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                connection.setAutoCommit(true); // Restaura o modo de commit automático
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
         
     // Deleta um equipamento e o seu correspondente na tabela de equipamentos
+    @Override
     public void deletar(int id) {
         PreparedStatement stmt1 = null;
         PreparedStatement stmt2 = null;
@@ -356,11 +356,10 @@ public class Outros_EquipamentosDAO implements EquipamentoLojaMetodos<Outros_Equ
 
                 // Confirma a transação
                 connection.commit();
-                System.out.println("Equipamento genérico com ID: " + id + " deletado");
+                System.out.println("\nEquipamento genérico com ID: " + id + " foi deletado da base de dados.\n");
             } else {
-                System.out.println("Nenhum equipamento genérico encontrado com o ID: " + id);
+                System.out.println("\nNenhum equipamento genérico com o ID: " + id + " foi encontrado na base de dados.\n");
             }
-            System.out.println("");
         } catch (SQLException e) {
             try {
                 if (connection != null) {
