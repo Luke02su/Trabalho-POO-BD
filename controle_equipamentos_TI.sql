@@ -19,6 +19,7 @@ CREATE TABLE equipamento (
 	 pk_equipamento INT AUTO_INCREMENT PRIMARY KEY,
 	 tipo VARCHAR(30) NOT NULL,
      modelo VARCHAR(30) NOT NULL
+     -- enviado ENUM ('Não', 'Sim') NOT NULL DEFAULT 'Não' -- Será implementado futuramente, em que, após o INSERT EM 'envio_equipamento', acionará uma TRIGGER que dará um UPDATE aqui.
 ) ENGINE=InnoDB; -- Engenharia padrão mais recente que possibilita maior segurança e otimização comparada ao MyISAM. 
 
 -- Criação da tabela de computador, com a qual se relacionará a classe 'computadorDAO', em Java, instanciada.
@@ -91,39 +92,53 @@ START TRANSACTION; -- Iniciando a transação manualmente, sem dar auto-commit. 
 INSERT equipamento (tipo, modelo) VALUES
 ('Microcomputador', 'Dell Optiplex 3060'),
 ('Microcomputador', 'Bematech RC-8400'),
-('Microcomputador', 'Dell Optiplex 3050');
+('Microcomputador', 'Dell Optiplex 3050'),
+('Desktop', 'Montada'),
+('Notebook', 'Inspiron 15');
 INSERT equipamento (tipo, modelo) VAlUES
 ('Multifuncional a laser', 'HP M1132'),
 ('Multifuncional a laser', 'Brother 2540'),
-('Fotográfica a jato de tinta', 'Epson L805');
+('Fotográfica a jato de tinta', 'Epson L805'),
+('Multifuncional a laser', 'HP M125a'),
+('Impressora a laser', 'P1102');
 INSERT equipamento (tipo, modelo) VALUES
 ('Nobreak', 'SMS'),
 ('Leitor de código de barras', 'Bematech'),
-('Monitor', 'AOC');
+('Monitor', 'AOC'),
+('Impressora fiscal', 'Bematech 4200'),
+('Estabilizador', 'SMS');
 
 -- Povoamento da  tabela de computador.
 INSERT INTO computador (fk_equipamento, pk_computador, processador, memoria, windows, armazenamento, formatacao, manutencao) VALUES
 (1, 130, 'i3 8100T', '8GB DDR4', '11 Pro', 'SSD 240GB', 'S', 'S'),
-(2, NULL, 'Celeron N5095', '4GB DDR4', '11 Pro', 'SSD NvME 256GB', 'S', 'S'),
-(3, NULL, 'i3 6100T', '4GB DDR4', '11 Pro', 'HDD 500GB', 'S', 'N');
+(2, NULL, 'Celeron N5095', '4GB DDR4', '11 Pro', 'NvME 256GB', 'S', 'S'),
+(3, NULL, 'i3 6100T', '4GB DDR4', '11 Pro', 'HDD 500GB', 'S', 'N'),
+(4, NULL, 'Pentium E5300', '4GB DDR2', '10 Pro', 'HDD 500GB', 'S', 'S'),
+(5, NULL, 'i5 71000', '8GB DDR4', '11 Pro', 'SSD 256GB', 'S', 'N');
 
 -- Povoamento das tabela de impressora.
 INSERT INTO impressora (fk_equipamento, pk_impressora, revisao) VALUES
-(4, 35, 'S'),
-(5, NULL, 'S'),
-(6, NULL, 'S');
+(6, 35, 'S'),
+(7, NULL, 'S'),
+(8, NULL, 'S'),
+(9, NULL, 'S'),
+(10, NULL, 'N');
 
 -- Povoamento das tabela de outros_equipamentos.
 INSERT INTO outros_equipamentos (fk_equipamento, pk_outros_equipamentos, descricao) VALUES
-(7, 203, '600 VA'),
-(8, NULL, 'Sem fio'),
-(9, NULL, '17 polegadas');
+(11, 203, '600 VA'),
+(12, NULL, 'Sem fio'),
+(13, NULL, '17 polegadas'),
+(14, NULL, 'Convertida'),
+(15, NULL, '600VA');
 
 -- Povoamento da tabela de loja.
 INSERT INTO loja (pk_loja, cnpj, gerente, cidade, telefone) VALUES 
 (NULL, '22.222.998/0923-40', 'Marcelo', 'Patrocínio', '(34) 9 98222-343'),
 (NULL, '22.222.998/0922-10', 'José', 'Patos de Minas', '(34) 9 9912-7876'),
-(NULL, '22.222.998/083-98', 'Kely', 'Paracatu', '(34) 9 97192-931');
+(NULL, '22.222.998/083-98', 'Kely', 'Paracatu', '(34) 9 97192-9341'),
+(NULL, '22.222.998/082-99', 'Raúl', 'São Gotardo', '(34) 9 9834-0973'),
+(NULL, '22.222.998/023-21', 'Raquel', 'Araxá', '(34) 9 8293-0287');
 
 -- Povoamento da tabela envio_equipamento, correlacionando com equipamento e loja de forma agregativa. (Em Java isso é visto como associação de agregação.)
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
@@ -131,13 +146,13 @@ INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) 
 (2, 2, '2024-08-02', 'Trocar máquina do gerente. A que voltar será destinada ao EFN.'),
 (3, 3, '2024-08-06', 'Substituir o computador do balcão que foi queimado.');
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
-(4, 1, '2024-06-20', 'Troca da impressora Brother 1617, engasgando papel).'),
-(5, 3, '2024-07-02', 'Troca de impressora, não puxa papel.'),
-(6, 2, '2024-07-27', 'Troca de impressora, borrando papel.');
+(6, 1, '2024-06-20', 'Troca da impressora Brother 1617, engasgando papel).'),
+(7, 3, '2024-07-02', 'Troca de impressora, não puxa papel.'),
+(8, 2, '2024-07-27', 'Troca de impressora, borrando papel.');
 INSERT INTO envio_equipamento (fk_equipamento, fk_loja, data_envio, observacao) VALUES
-(7, 3, '2024-06-14', 'Troca de nobreak queimado.'),
-(8, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
-(9, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
+(11, 3, '2024-06-14', 'Troca de nobreak queimado.'),
+(12, 2, '2024-07-01', 'Faltando leitor s/ fio na loja'),
+(13, 1, '2024-07-20', 'Troca de monitor de 15 polegadas.');
 -- ROLLBACK; -- Caso deseje voltar para estado anterior antes das inserções.
 COMMIT; -- Comitando as inserções feitas.
 
@@ -160,7 +175,7 @@ CREATE VIEW view_equipamento_envio_detalhado AS (
 );
 
 -- Criando uma VIEW para o envio de computador, na qual pode-se ver os que não foram enviados.
-CREATE VIEW view_computador_enviado_nao_enviado AS (
+CREATE VIEW view_computador_enviado_nao_enviado AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária.
 	SELECT c.pk_computador AS id_computador, e.modelo
 	FROM equipamento e
     INNER JOIN computador c
@@ -171,19 +186,19 @@ CREATE VIEW view_computador_enviado_nao_enviado AS (
 );
 
 -- Criando uma VIEW para o envio de impressora, na qual pode-se ver as que não foram enviadas.
-CREATE VIEW view_impressora_enviada_nao_enviada AS (
-	SELECT pk_impressora AS id_impressora, e.modelo
+CREATE VIEW view_impressora_enviada_nao_enviada AS ( -- Após criar, futuramente, a TRIGGER de envio para alterar o status de equipamento, tal VIEW se torna desnecessária.
+	SELECT i.pk_impressora AS id_impressora, e.modelo
     FROM equipamento e
     INNER JOIN impressora i
     ON e.pk_equipamento = i.fk_equipamento
 	LEFT JOIN envio_equipamento ee
     ON ee.fk_equipamento = e.pk_equipamento
-    WHERE ee.fk_equipamento IS NULL IS NULL
+    WHERE ee.fk_equipamento IS NULL
 );
 
 -- Criando uma VIEW para o envio de outros_equipamentos, na qual pode-se ver os que não foram enviados.
 CREATE VIEW view_outros_equip_enviado_nao_enviado AS (
-	SELECT pk_outros_equipamentos AS id_outros, e.modelo
+	SELECT o.pk_outros_equipamentos AS id_outros, e.modelo
     FROM equipamento e
     INNER JOIN outros_equipamentos o
     ON e.pk_equipamento = o.fk_equipamento
@@ -223,8 +238,8 @@ CREATE TABLE log_envios_descartados_equipamentos (
 	INDEX idx_fk_equipamento (fk_equipamento),
     INDEX idx_fk_loja (fk_loja),
     
-    CONSTRAINT pk_envio_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT pk_envio_loja_descarte FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT pk_envio_equipamento_descarte FOREIGN KEY (fk_equipamento) REFERENCES equipamento(pk_equipamento) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT pk_envio_loja_descarte FOREIGN KEY (fk_loja) REFERENCES loja(pk_loja) ON UPDATE CASCADE ON DELETE CASCADE
 )ENGINE=InnoDB;
 
 /*Criação do usuário; atribuição de papel criado com seus respectivos privilégios relativos somente ao CRUD. Como
@@ -342,6 +357,6 @@ CALL proc_deletar_envio_equipamento(1, 1);
 SELECT * FROM log_equipamentos_descartados;
 SELECT * FROM log_envios_descartados_equipamentos;
 
--- DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
--- DROP USER auxiliar01_ti; -- Caso seja necessário excluir o usuário.
--- DROP ROLE aux_ti; -- Caso seja necessário excluir o papel atribupido ao usuário.
+/*DROP SCHEMA controle_equipamentos_ti; -- Caso seja necessário resetar o banco de dados apague-o.
+DROP USER auxiliar01_ti; -- Caso seja necessário excluir o usuário.
+DROP ROLE aux_ti; -- Caso seja necessário excluir o papel atribupido ao usuário.
