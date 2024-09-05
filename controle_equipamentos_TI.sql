@@ -71,7 +71,7 @@ CREATE TABLE loja (
 
 -- Criação da tabela de computador, sobre a qual se relacionará a classe 'EnvioEquipamento', em Java, instanciada.
 CREATE TABLE envio_equipamento (
-	fk_equipamento INT NOT NULL,
+	fk_equipamento INT NOT NULL UNIQUE,
     fk_loja INT NOT NULL,
     data_envio DATE NOT NULL,
     observacao TEXT NOT NULL,
